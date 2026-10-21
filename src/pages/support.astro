@@ -1,0 +1,200 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ExternalLink from '../components/ExternalLink.astro';
+import Icon from '../components/Icon.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { support } from '../config/support';
+import { withBase } from '../lib/urls';
+
+const ways = [
+  {
+    title: 'Give your time',
+    text: 'Volunteers run events, research issues and talk with neighbors. It’s the support we need most.',
+    link: { label: 'Volunteer', href: '/volunteer/' },
+  },
+  {
+    title: 'Spread the word',
+    text: 'Forward an article, share a petition, or bring a friend to an event. Most people get involved because someone asked them.',
+    link: { label: 'Get updates to share', href: '/newsletter/' },
+  },
+  {
+    title: 'Partner with us',
+    text: 'Local businesses, congregations, schools and community groups can help by hosting an event, sharing space, or spreading information.',
+    link: { label: 'Talk to us about partnering', href: '/contact/' },
+  },
+];
+const giving = support.donations;
+---
+
+<BaseLayout
+  title="Support Our Work"
+  description="Ways to support Get Involved Van in Van, Texas: volunteer, share our work, partner with us, or contribute."
+>
+  <PageHeader
+    title="Support our work"
+    lead="Get Involved Van depends on people who give their time, share what we publish, and help keep the work going."
+  />
+
+  <section class="section" aria-labelledby="why-title">
+    <div class="container support-why">
+      <h2 id="why-title">Why support matters</h2>
+      <p class="lead">
+        Research takes time. Events need space and supplies. Keeping residents informed takes people willing to show up at meetings and write up what
+        happened. Support of any kind lets us do more of it, and do it well.
+      </p>
+    </div>
+  </section>
+
+  <section class="section section--flush-top" aria-labelledby="ways-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="ways-title">Ways to help that don’t cost anything</h2>
+      </div>
+      <ul class="support-ways" role="list">
+        {
+          ways.map((w) => (
+            <li>
+              <h3>{w.title}</h3>
+              <p>{w.text}</p>
+              <a class="link-arrow" href={withBase(w.link.href)}>
+                {w.link.label} <Icon name="arrow-right" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="give-title">
+    <div class="container giving">
+      <div>
+        <h2 id="give-title">Financial contributions</h2>
+      </div>
+      <div class="giving__body">
+        {
+          giving.url ? (
+            <>
+              <p class="lead">Contributions help cover printing, event costs and the services that keep this website running.</p>
+              <ExternalLink href={giving.url} class="btn btn--action btn--lg">
+                Contribute online{giving.provider ? ` via ${giving.provider}` : ''}
+              </ExternalLink>
+              <p class="giving__fine">
+                You’ll be taken to a secure payment page run by {giving.provider ?? 'our payment provider'}. This website never handles card details.
+              </p>
+            </>
+          ) : (
+            <div class="notice">
+              <strong>Online giving isn’t set up yet</strong>
+              <p>
+                We aren’t accepting online contributions at the moment. If you’d like to support Get Involved Van financially, please{' '}
+                <a href={withBase('/contact/')}>get in touch</a> and we’ll talk it through.
+              </p>
+              <p>
+                When online giving opens, it will use a secure page run by an established payment provider. We will never ask for card details on this
+                website.
+              </p>
+            </div>
+          )
+        }
+        <p class="giving__tax">
+          {
+            giving.taxStatement ??
+              'Get Involved Van has not published a tax-exempt status, so please don’t assume a contribution is tax-deductible. Ask us if this matters for your planning.'
+          }
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="contact-title">
+    <div class="container support-contact">
+      <h2 id="contact-title">Questions about supporting us?</h2>
+      <p>We’re happy to talk about volunteering, partnerships or anything else.</p>
+      <a class="btn btn--primary" href={withBase('/contact/')}>Contact us <Icon name="arrow-right" /></a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .support-why {
+    display: grid;
+    gap: var(--space-l) var(--space-3xl);
+  }
+
+  .support-why .lead {
+    max-width: 46rem;
+    color: var(--color-text-muted);
+  }
+
+  .support-ways {
+    display: grid;
+    gap: 0 var(--space-2xl);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .support-ways li {
+    padding-block: var(--space-l);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .support-ways h3 {
+    font-size: var(--fs-h3);
+    margin-bottom: var(--space-xs);
+  }
+
+  .support-ways p {
+    color: var(--color-text-muted);
+    max-width: 56ch;
+  }
+
+  .support-ways .link-arrow {
+    margin-top: var(--space-s);
+  }
+
+  .giving {
+    display: grid;
+    gap: var(--space-l) var(--space-3xl);
+  }
+
+  .giving__body {
+    display: grid;
+    gap: var(--space-l);
+    justify-items: start;
+    max-width: 44rem;
+  }
+
+  .giving__fine,
+  .giving__tax {
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  .support-contact {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
+  }
+
+  .support-contact p {
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 62em) {
+    .support-why,
+    .giving {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    }
+
+    .support-ways {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .support-ways li {
+      border-bottom: 0;
+      border-top: var(--rule-thick) solid var(--gv-ink);
+    }
+  }
+</style>

@@ -1,0 +1,241 @@
+---
+import { getEntry, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ReadingLayout from '../../layouts/ReadingLayout.astro';
+import ContentImage from '../../components/ContentImage.astro';
+import Icon from '../../components/Icon.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import SourceList from '../../components/SourceList.astro';
+import StatusNotice from '../../components/StatusNotice.astro';
+import PetitionForm from '../../components/forms/PetitionForm.astro';
+import { forms } from '../../config/forms';
+import { type Petition, PETITION_STATE_LABELS, getBuildable, petitionAcceptsSignatures, petitionState } from '../../lib/content';
+import { formatLongDate, formatPlainDate, formatTime, localToDate, plainDateIso } from '../../lib/dates';
+import { links, withBase } from '../../lib/urls';
+
+export async function getStaticPaths() {
+  const petitions = await getBuildable('petitions');
+  return petitions.map((petition) => ({ params: { slug: petition.id }, props: { petition } }));
+}
+
+interface Props {
+  petition: Petition;
+}
+
+const { petition } = Astro.props;
+const d = petition.data;
+const { Content } = await render(petition);
+const published = d.status === 'published';
+const state = petitionState(petition);
+const accepting = petitionAcceptsSignatures(petition);
+
+const issueEntry = d.issue ? await getEntry(d.issue) : undefined;
+const issue = issueEntry && (issueEntry.data.status !== 'draft' || import.meta.env.DEV) ? issueEntry : undefined;
+const articleEntry = d.article ? await getEntry(d.article) : undefined;
+const article = articleEntry && (articleEntry.data.status !== 'draft' || import.meta.env.DEV) ? articleEntry : undefined;
+
+const closes = d.closesAt ? localToDate(d.closesAt) : null;
+const opens = d.opensAt ? localToDate(d.opensAt) : null;
+const showCount = d.showSignatureCount && forms.enabled && published && state !== 'upcoming';
+---
+
+<BaseLayout title={d.title} description={d.summary} noindex={!published}>
+  <StatusNotice status={d.status} kind="petition" />
+  <PageHeader title={d.title} lead={d.summary} breadcrumbs={[{ label: 'Petitions', href: '/petitions/' }]}>
+    <p class="meta">
+      <span class:list={['tag', `tag--${state === 'open' ? 'open' : state}`]}>{PETITION_STATE_LABELS[state]}</span>
+      {published && <span>Started <time datetime={plainDateIso(d.publishedAt)}>{formatPlainDate(d.publishedAt)}</time></span>}
+      {
+        accepting && closes && (
+          <span>
+            Closes <time datetime={closes.toISOString()}>{formatLongDate(closes)} at {formatTime(closes)}</time>
+          </span>
+        )
+      }
+      {state === 'upcoming' && opens && <span>Opens {formatLongDate(opens)}</span>}
+    </p>
+  </PageHeader>
+
+  <ReadingLayout asideFirst={accepting} stickyAside>
+    <section class="ask" aria-labelledby="ask-title">
+      <h2 id="ask-title">What this petition asks for</h2>
+      <p class="ask__text">{d.ask}</p>
+      {
+        d.recipient && (
+          <p class="ask__recipient">
+            <strong>Delivered to:</strong> {d.recipient}
+          </p>
+        )
+      }
+    </section>
+
+    {
+      d.image && (
+        <div class="frame petition-image">
+          <ContentImage src={d.image.src} alt={d.image.alt} position={d.image.position} sizes="(min-width: 62em) 60vw, 100vw" />
+        </div>
+      )
+    }
+
+    <section aria-labelledby="background-title">
+      <h2 id="background-title" class="visually-hidden">Background</h2>
+      <div class="prose">
+        <Content />
+      </div>
+    </section>
+
+    {
+      d.outcome && (state === 'closed' || state === 'archived') && (
+        <section class="notice notice--success" aria-labelledby="outcome-title">
+          <h2 id="outcome-title" class="outcome-title">
+            What happened
+          </h2>
+          <p>{d.outcome}</p>
+        </section>
+      )
+    }
+
+    {
+      (issue || article) && (
+        <section class="related" aria-labelledby="related-title">
+          <h2 id="related-title">Background reading</h2>
+          <ul role="list">
+            {article && (
+              <li>
+                <a class="link-arrow" href={links.article(article.id)}>
+                  {article.data.title} <Icon name="arrow-right" />
+                </a>
+              </li>
+            )}
+            {issue && (
+              <li>
+                <a class="link-arrow" href={links.issue(issue.id)}>
+                  Issue: {issue.data.title} <Icon name="arrow-right" />
+                </a>
+              </li>
+            )}
+          </ul>
+        </section>
+      )
+    }
+
+    <SourceList sources={d.sources} />
+
+    <Fragment slot="aside">
+      <section class="sign" id="sign" aria-labelledby="sign-title">
+        <h2 id="sign-title">{accepting ? 'Sign this petition' : 'Signatures'}</h2>
+        {
+          showCount && (
+            <p class="sign__count" data-signature-count={petition.id} data-endpoint={forms.endpoint} hidden>
+              <strong data-count-value />{' '}
+              <span data-count-noun>signatures</span> so far
+            </p>
+          )
+        }
+        <PetitionForm petition={petition} />
+      </section>
+      <p class="sign__privacy">
+        <Icon name="info" />
+        <span>
+          We use signer details only to run this petition and, if you opt in, to send you our newsletter. Read the <a href={withBase('/privacy/')}
+            >privacy policy</a
+          >.
+        </span>
+      </p>
+    </Fragment>
+  </ReadingLayout>
+</BaseLayout>
+
+<style>
+  .ask {
+    padding: var(--space-l) var(--space-l) var(--space-l) calc(var(--space-l) + 2px);
+    border-left: 6px solid var(--gv-crimson);
+    background: var(--gv-crimson-050);
+  }
+
+  .ask h2 {
+    font-size: var(--fs-h4);
+    margin-bottom: var(--space-s);
+    color: var(--gv-crimson);
+  }
+
+  .ask__text {
+    font-family: var(--font-sans);
+    font-size: var(--fs-lead);
+    line-height: 1.4;
+  }
+
+  .ask__recipient {
+    margin-top: var(--space-m);
+  }
+
+  .petition-image {
+    aspect-ratio: 16 / 9;
+  }
+
+  .petition-image :global(picture),
+  .petition-image :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .outcome-title {
+    font-size: var(--fs-h4);
+    color: var(--gv-success);
+  }
+
+  .related h2 {
+    font-size: var(--fs-h4);
+    margin-bottom: var(--space-s);
+  }
+
+  .related ul {
+    display: grid;
+    gap: var(--space-s);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sign {
+    padding: clamp(1.25rem, 1rem + 1vw, 2rem);
+    border: 1.5px solid var(--gv-slate-blue);
+    border-top: 6px solid var(--gv-crimson);
+    background: var(--gv-white);
+  }
+
+  .sign h2 {
+    font-size: var(--fs-h3);
+    margin-bottom: var(--space-l);
+  }
+
+  .sign__count {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    margin: calc(var(--space-s) * -1) 0 var(--space-l);
+    color: var(--color-text-muted);
+  }
+
+  .sign__count strong {
+    font-size: 2rem;
+    font-weight: var(--weight-display);
+    color: var(--gv-ink);
+  }
+
+  .sign__privacy {
+    display: flex;
+    gap: var(--space-xs);
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  .sign__privacy :global(svg) {
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.2rem;
+    color: var(--gv-deep-blue);
+  }
+</style>

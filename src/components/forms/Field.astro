@@ -1,0 +1,97 @@
+---
+/**
+ * Labelled text input or textarea with hint and error slots wired up for
+ * screen readers (aria-describedby).
+ */
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props {
+  id: string;
+  name: string;
+  label: string;
+  type?: 'text' | 'email' | 'tel' | 'number';
+  required?: boolean;
+  hint?: string;
+  textarea?: boolean;
+  rows?: number;
+  autocomplete?: HTMLAttributes<'input'>['autocomplete'];
+  inputmode?: HTMLAttributes<'input'>['inputmode'];
+  maxlength?: number;
+  minlength?: number;
+  min?: number;
+  max?: number;
+  value?: string | number;
+  pattern?: string;
+  spellcheck?: boolean;
+  class?: string;
+}
+
+const {
+  id,
+  name,
+  label,
+  type = 'text',
+  required = false,
+  hint,
+  textarea = false,
+  rows = 6,
+  autocomplete,
+  inputmode,
+  maxlength,
+  minlength,
+  min,
+  max,
+  value,
+  pattern,
+  spellcheck,
+  class: className,
+} = Astro.props;
+
+const hintId = hint ? `${id}-hint` : undefined;
+const errorId = `${id}-error`;
+const describedBy = [hintId, errorId].filter(Boolean).join(' ');
+---
+
+<div class:list={['field', className]}>
+  <label class="field__label" for={id}>
+    {label}{!required && <span class="field__optional"> (optional)</span>}
+  </label>
+  {hint && <p class="field__hint" id={hintId}>{hint}</p>}
+  {
+    textarea ? (
+      <textarea
+        class="textarea"
+        id={id}
+        name={name}
+        rows={rows}
+        required={required}
+        aria-required={required ? 'true' : undefined}
+        aria-describedby={describedBy}
+        maxlength={maxlength}
+        minlength={minlength}
+        spellcheck={spellcheck}
+        set:text={value ?? ''}
+      />
+    ) : (
+      <input
+        class="input"
+        id={id}
+        name={name}
+        type={type}
+        required={required}
+        aria-required={required ? 'true' : undefined}
+        aria-describedby={describedBy}
+        autocomplete={autocomplete}
+        inputmode={inputmode}
+        maxlength={maxlength}
+        minlength={minlength}
+        min={min}
+        max={max}
+        value={value}
+        pattern={pattern}
+        spellcheck={spellcheck}
+      />
+    )
+  }
+  <p class="field__error" id={errorId} data-error-for={name}></p>
+</div>

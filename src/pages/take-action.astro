@@ -1,0 +1,281 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EmptyState from '../components/EmptyState.astro';
+import EventList from '../components/EventList.astro';
+import FeaturedCampaign from '../components/FeaturedCampaign.astro';
+import Icon from '../components/Icon.astro';
+import PageHeader from '../components/PageHeader.astro';
+import PetitionList from '../components/PetitionList.astro';
+import NewsletterForm from '../components/forms/NewsletterForm.astro';
+import { participationTips } from '../config/resources';
+import { getFeaturedCampaign } from '../lib/campaign';
+import { getPublished, petitionState, sortPetitions, splitEvents } from '../lib/content';
+import { withBase } from '../lib/urls';
+
+const campaign = await getFeaturedCampaign();
+const openPetitions = sortPetitions(await getPublished('petitions')).filter((p) => petitionState(p) === 'open');
+const { upcoming } = splitEvents(await getPublished('events'));
+const events = upcoming.slice(0, 4);
+
+const jump = [
+  { label: 'Sign a petition', href: '#petitions' },
+  { label: 'Volunteer', href: '#volunteer' },
+  { label: 'Come to an event', href: '#events' },
+  { label: 'Speak up at a public meeting', href: '#meetings' },
+  { label: 'Stay informed', href: '#newsletter' },
+];
+---
+
+<BaseLayout
+  title="Take Action"
+  description="Practical ways to get involved in Van, Texas: sign a local petition, volunteer, attend an event or public meeting, and stay informed."
+>
+  <PageHeader
+    title="Take action"
+    lead="Practical ways to make a difference in Van, from five minutes to a few hours a month. Start with whichever fits."
+    variant="inverse"
+  >
+    <nav class="jump" aria-label="On this page">
+      <ul role="list">
+        {
+          jump.map((j) => (
+            <li>
+              <a href={j.href}>{j.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </PageHeader>
+
+  {
+    campaign && (
+      <div class="priority">
+        <FeaturedCampaign campaign={campaign} />
+      </div>
+    )
+  }
+
+  <section class="section action" id="petitions" aria-labelledby="petitions-title">
+    <div class="container action__grid">
+      <div class="action__intro">
+        <h2 id="petitions-title">Sign a petition</h2>
+        <p>A petition shows decision-makers how many residents support a specific request. It takes about a minute.</p>
+        <a class="link-arrow" href={withBase('/petitions/')}>All petitions <Icon name="arrow-right" /></a>
+      </div>
+      <div class="action__body">
+        {
+          openPetitions.length > 0 ? (
+            <PetitionList petitions={openPetitions} />
+          ) : (
+            <EmptyState
+              compact
+              title="No petitions are open right now"
+              text={
+                campaign
+                  ? 'The petition for our first initiative will open when the initiative is announced.'
+                  : 'When a petition opens, it will appear here first.'
+              }
+              action={{ label: 'Get notified by email', href: '#newsletter' }}
+            />
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt action" id="volunteer" aria-labelledby="volunteer-title">
+    <div class="container action__grid">
+      <div class="action__intro">
+        <h2 id="volunteer-title">Volunteer</h2>
+        <p>Give an evening, a Saturday or a skill. There’s no minimum commitment.</p>
+      </div>
+      <div class="action__body volunteer-teaser">
+        <ul role="list">
+          <li>Help set up and run community events</li>
+          <li>Talk with neighbors about local issues</li>
+          <li>Research public records and meeting minutes</li>
+          <li>Write, photograph or design</li>
+        </ul>
+        <a class="btn btn--primary btn--lg" href={withBase('/volunteer/')}>
+          Sign up to volunteer <Icon name="arrow-right" />
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section action" id="events" aria-labelledby="events-title">
+    <div class="container action__grid">
+      <div class="action__intro">
+        <h2 id="events-title">Come to an event</h2>
+        <p>Meet neighbors, learn about an issue, and find out where help is needed.</p>
+        <a class="link-arrow" href={withBase('/events/')}>All events <Icon name="arrow-right" /></a>
+      </div>
+      <div class="action__body">
+        {
+          events.length > 0 ? (
+            <EventList events={events} compact upcoming />
+          ) : (
+            <EmptyState
+              compact
+              title="No events scheduled yet"
+              text="Events are listed as soon as the date and place are confirmed."
+              action={{ label: 'Get notified by email', href: '#newsletter' }}
+            />
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt action" id="meetings" aria-labelledby="meetings-title">
+    <div class="container action__grid">
+      <div class="action__intro">
+        <h2 id="meetings-title">Speak up at a public meeting</h2>
+        <p>City council and school board meetings are open to the public. Here’s how to make the most of one.</p>
+        <a class="link-arrow" href={withBase('/resources/')}>Agendas and official websites <Icon name="arrow-right" /></a>
+      </div>
+      <ol class="action__body tips" role="list">
+        {
+          participationTips.map((tip) => (
+            <li>
+              <h3>{tip.title}</h3>
+              <p>{tip.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="section action" id="newsletter" aria-labelledby="newsletter-title">
+    <div class="container action__grid">
+      <div class="action__intro">
+        <h2 id="newsletter-title">Stay informed</h2>
+        <p>Occasional email updates about new issues, meetings worth attending, and ways to help.</p>
+      </div>
+      <div class="action__body">
+        <NewsletterForm id="action-newsletter" source="take-action" />
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt support-strip" aria-labelledby="support-title">
+    <div class="container support-strip__inner">
+      <h2 id="support-title">Other ways to help</h2>
+      <p>Share what we publish, introduce us to people who should be involved, or support the work in other ways.</p>
+      <a class="link-arrow" href={withBase('/support/')}>Support Get Involved Van <Icon name="arrow-right" /></a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .jump ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin: var(--space-xl) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .jump a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0.45rem 0.9rem;
+    border: 1.5px solid rgb(255 255 255 / 0.6);
+    border-radius: var(--radius);
+    color: var(--gv-white);
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  .jump a:hover {
+    background: var(--gv-white);
+    color: var(--gv-deep-blue);
+  }
+
+  .action__grid {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  .action__intro {
+    padding-top: var(--space-m);
+    border-top: var(--rule-thick) solid var(--gv-ink);
+  }
+
+  .action__intro h2 {
+    font-size: var(--fs-h2);
+  }
+
+  .action__intro p {
+    margin-top: var(--space-s);
+    max-width: 34ch;
+    color: var(--color-text-muted);
+  }
+
+  .action__intro .link-arrow {
+    margin-top: var(--space-m);
+  }
+
+  .action__body {
+    min-width: 0;
+  }
+
+  .volunteer-teaser ul {
+    display: grid;
+    gap: 0;
+    margin: 0 0 var(--space-xl);
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--gv-slate-300);
+  }
+
+  .volunteer-teaser li {
+    padding-block: var(--space-s);
+    border-bottom: 1px solid var(--gv-slate-300);
+    font-size: 1.125rem;
+  }
+
+  .tips {
+    display: grid;
+    gap: var(--space-l);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tips h3 {
+    font-size: 1.2rem;
+    margin-bottom: var(--space-2xs);
+  }
+
+  .tips p {
+    color: var(--color-text-muted);
+    max-width: 58ch;
+  }
+
+  .support-strip__inner {
+    display: grid;
+    gap: var(--space-s);
+    justify-items: start;
+  }
+
+  .support-strip__inner h2 {
+    font-size: var(--fs-h3);
+  }
+
+  .support-strip__inner p {
+    color: var(--color-text-muted);
+    max-width: 60ch;
+  }
+
+  @media (min-width: 62em) {
+    .action__grid {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+      gap: clamp(2rem, 5vw, 5rem);
+    }
+  }
+</style>

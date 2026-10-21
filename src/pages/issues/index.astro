@@ -1,0 +1,193 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import IssueList from '../../components/IssueList.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { ISSUE_STATE_LABELS, getPublished, sortIssues } from '../../lib/content';
+import { withBase } from '../../lib/urls';
+
+const all = sortIssues(await getPublished('issues'));
+const current = all.filter((i) => i.data.state !== 'archived');
+const archived = all.filter((i) => i.data.state === 'archived');
+// Search and filter controls appear only once there are enough issues to need them.
+const showControls = current.length > 6;
+const states = (['active', 'monitoring', 'resolved'] as const).filter((s) => current.some((i) => i.data.state === s));
+---
+
+<BaseLayout
+  title="Local Issues"
+  description="Plain-language background on local issues in Van, Texas: what is happening, who decides, where each issue stands, and how residents can take part."
+>
+  <PageHeader
+    title="Local issues"
+    lead="Plain-language background on the questions facing Van: what’s happening, who decides, and how you can take part."
+  />
+
+  <section class="section">
+    <div class="container issues-layout">
+      <div class="issues-main">
+        {
+          current.length > 0 ? (
+            <>
+              {showControls && (
+                <form class="issue-filters" role="search" aria-label="Filter issues" data-issue-filters>
+                  <div class="field issue-filters__search">
+                    <label class="field__label" for="issue-search">
+                      Search issues
+                    </label>
+                    <input class="input" id="issue-search" type="search" name="q" autocomplete="off" />
+                  </div>
+                  <fieldset class="field issue-filters__states">
+                    <legend>Status</legend>
+                    <div class="issue-filters__options">
+                      <label class="choice">
+                        <input type="radio" name="state" value="" checked /> All
+                      </label>
+                      {states.map((s) => (
+                        <label class="choice">
+                          <input type="radio" name="state" value={s} /> {ISSUE_STATE_LABELS[s]}
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                  <p class="issue-filters__count" role="status" aria-live="polite" data-issue-count />
+                </form>
+              )}
+              <IssueList issues={current} headingLevel="h2" featureFirst={!showControls} />
+            </>
+          ) : (
+            <EmptyState
+              headingLevel="h2"
+              title="No issues published yet"
+              text="We publish an issue only after we’ve researched it and can point to the sources. The first ones are being prepared now. If there’s something in Van you think deserves attention, tell us about it."
+              action={{ label: 'Suggest an issue', href: '/contact/' }}
+              secondary={{ label: 'Find public meetings and records', href: '/resources/' }}
+            />
+          )
+        }
+
+        {
+          archived.length > 0 && (
+            <section class="issues-archive" aria-labelledby="archive-title">
+              <div class="section-head">
+                <h2 id="archive-title">Archived issues</h2>
+                <p>Issues we’re no longer actively following, kept here for the record.</p>
+              </div>
+              <IssueList issues={archived} />
+            </section>
+          )
+        }
+      </div>
+
+      <aside class="issues-aside" aria-labelledby="how-title">
+        <h2 id="how-title">How we cover issues</h2>
+        <dl>
+          <dt>Active</dt>
+          <dd>Something is being decided, or residents can act on it now.</dd>
+          <dt>Monitoring</dt>
+          <dd>Worth watching. We’ll post updates when something changes.</dd>
+          <dt>Resolved</dt>
+          <dd>A decision has been made. We explain what happened.</dd>
+        </dl>
+        <p>Every issue page links to its sources. If you spot an error, <a href={withBase('/contact/')}>let us know</a> and we’ll correct it.</p>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-issue-filters]');
+  if (form) {
+    const items = Array.from(document.querySelectorAll<HTMLElement>('.issue-item[data-search]'));
+    const count = form.querySelector<HTMLElement>('[data-issue-count]');
+    const apply = () => {
+      const q = (form.elements.namedItem('q') as HTMLInputElement).value.trim().toLowerCase();
+      const state = (new FormData(form).get('state') as string) || '';
+      let shown = 0;
+      for (const item of items) {
+        const match = (!q || item.dataset.search!.includes(q)) && (!state || item.dataset.issueState === state);
+        item.hidden = !match;
+        if (match) shown++;
+      }
+      if (count) count.textContent = `Showing ${shown} of ${items.length} issues`;
+    };
+    form.addEventListener('input', apply);
+    form.addEventListener('submit', (e) => e.preventDefault());
+    apply();
+  }
+</script>
+
+<style>
+  .issues-layout {
+    display: grid;
+    gap: var(--space-3xl);
+  }
+
+  .issues-main {
+    display: grid;
+    gap: var(--space-2xl);
+    align-content: start;
+    min-width: 0;
+  }
+
+  .issues-archive {
+    margin-top: var(--space-xl);
+  }
+
+  .issues-aside {
+    align-self: start;
+    padding: var(--space-l);
+    background: var(--color-bg-alt);
+    border-top: var(--rule-thick) solid var(--gv-deep-blue);
+  }
+
+  .issues-aside h2 {
+    font-size: var(--fs-h4);
+    margin-bottom: var(--space-m);
+  }
+
+  .issues-aside dl {
+    margin: 0 0 var(--space-m);
+  }
+
+  .issues-aside dt {
+    font-weight: 700;
+    color: var(--gv-deep-blue);
+  }
+
+  .issues-aside dd {
+    margin: 0 0 var(--space-s);
+    color: var(--color-text-muted);
+    font-size: var(--fs-small);
+  }
+
+  .issues-aside p {
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  .issue-filters {
+    display: grid;
+    gap: var(--space-m);
+    padding: var(--space-l);
+    border: 1px solid var(--color-border);
+  }
+
+  .issue-filters__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-l);
+  }
+
+  .issue-filters__count {
+    margin: 0;
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 62em) {
+    .issues-layout {
+      grid-template-columns: minmax(0, 1fr) 19rem;
+    }
+  }
+</style>

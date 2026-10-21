@@ -1,0 +1,92 @@
+---
+import LegalLayout from '../layouts/LegalLayout.astro';
+import { site } from '../config/site';
+import { withBase } from '../lib/urls';
+
+const reviewItems = [
+  'Whether the organization wants to add a governing-law or dispute clause (consult a lawyer; none is included).',
+  'The standards for removing petition signatures and limiting participation in events.',
+  'How others may reuse articles and photos published on this website.',
+];
+
+const toc = [
+  { id: 'using', label: 'Using this website' },
+  { id: 'accuracy', label: 'Accuracy and corrections' },
+  { id: 'submissions', label: 'Petitions and other submissions' },
+  { id: 'guidelines', label: 'Participation guidelines' },
+  { id: 'events', label: 'At events and meetings' },
+  { id: 'content', label: 'Our content and outside links' },
+  { id: 'independence', label: 'Independence' },
+  { id: 'changes', label: 'Changes and contact' },
+];
+---
+
+<LegalLayout
+  title="Terms and Participation Guidelines"
+  description="How to use the Get Involved Van website, and the conduct we expect when signing petitions, volunteering, attending events and contacting us."
+  lead="The basic rules for using this website, and what we expect from everyone who takes part in Get Involved Van’s work."
+  updated="2026-10-21"
+  reviewItems={reviewItems}
+  toc={toc}
+>
+  <h2 id="using">Using this website</h2>
+  <p>
+    {site.name} provides this website to inform people in {site.location.city}, {site.location.state} about local issues and ways to take part. By using
+    it, you agree to use it lawfully and in the spirit described here. Please don’t try to disrupt the site, get around its spam protection, or access
+    information that isn’t meant to be public.
+  </p>
+
+  <h2 id="accuracy">Accuracy and corrections</h2>
+  <p>
+    We work to get facts right and link to our sources so you can check them. Articles are labelled so you can tell reporting and explanation apart from
+    our own positions. If you find an error, please <a href={withBase('/contact/')}>tell us</a>; we will correct mistakes and note significant
+    corrections. Information on this site is provided for general civic purposes and is not legal or professional advice.
+  </p>
+
+  <h2 id="submissions">Petitions and other submissions</h2>
+  <ul>
+    <li>Give accurate information, and sign petitions or RSVP only for yourself.</li>
+    <li>Each person may sign each petition once. Signatures are not identity-verified, so we rely on your honesty.</li>
+    <li>We may remove signatures or submissions that appear automated, duplicated, fraudulent or abusive.</li>
+    <li>Don’t include other people’s personal information in messages without their permission.</li>
+  </ul>
+  <p>How we handle what you submit is explained in our <a href={withBase('/privacy/')}>privacy policy</a>.</p>
+
+  <h2 id="guidelines">Participation guidelines</h2>
+  <p>Get Involved Van welcomes people of every political view. To keep it that way, we ask everyone who takes part to:</p>
+  <ul>
+    <li>Be civil. Disagree with ideas, not with people’s worth.</li>
+    <li>No threats, harassment, intimidation or hate speech, online or in person.</li>
+    <li>Don’t impersonate anyone or misrepresent who you speak for.</li>
+    <li>Don’t use our forms, events or volunteer lists to promote candidates, parties or commercial products.</li>
+    <li>Stick to facts you can support, and be open about opinions.</li>
+  </ul>
+  <p>We may decline messages, remove submissions or limit participation by anyone who doesn’t follow these guidelines.</p>
+
+  <h2 id="events">At events and meetings</h2>
+  <p>
+    At Get Involved Van events, follow these guidelines, the instructions of event organizers and the rules of the venue. At public meetings run by
+    government bodies, follow that body’s rules for public comment and conduct. Get Involved Van does not run those meetings.
+  </p>
+
+  <h2 id="content">Our content and outside links</h2>
+  <p>
+    You are welcome to link to and share our pages. Please credit {site.name} when quoting our articles. Logos, photographs and other material may
+    belong to their owners. Links to outside websites are provided for convenience; we don’t control those sites and aren’t responsible for their
+    content.
+  </p>
+
+  <h2 id="independence">Independence</h2>
+  <p>
+    {site.name} is independent and nonpartisan. It is not affiliated with, or endorsed by, the City of {site.location.city}, Van Independent School
+    District, {site.location.county} or any other government body. It is an associated partner of the {site.partner.name}, which is a separate
+    organization.
+  </p>
+
+  <h2 id="changes">Changes and contact</h2>
+  <p>
+    We may update these terms; the date above shows the latest version. Questions are welcome through our <a href={withBase('/contact/')}
+      >contact page</a
+    >.
+  </p>
+</LegalLayout>

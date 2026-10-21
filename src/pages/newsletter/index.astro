@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import NewsletterForm from '../../components/forms/NewsletterForm.astro';
+import { withBase } from '../../lib/urls';
+---
+
+<BaseLayout
+  title="Newsletter"
+  description="Get occasional email updates from Get Involved Van about local issues, public meetings and ways to take part in Van, Texas."
+>
+  <PageHeader title="Get email updates" lead="Short, occasional emails about what’s happening in Van and how to take part." />
+
+  <div class="container newsletter-page">
+    <section class="newsletter-what" aria-labelledby="what-title">
+      <h2 id="what-title">What you’ll get</h2>
+      <ul role="list">
+        <li><strong>New issues</strong> as we publish them, with links to the full write-up.</li>
+        <li><strong>Meetings and events</strong> worth attending, with dates and places.</li>
+        <li><strong>Calls to action</strong> such as new petitions and volunteer needs.</li>
+      </ul>
+      <p>We email only when there’s something worth your time. We never sell or share our list.</p>
+      <h3>How subscribing works</h3>
+      <ol role="list" class="steps">
+        <li>Enter your email address and tick the consent box.</li>
+        <li>We send you a confirmation email.</li>
+        <li>Click the link in it. You’re not subscribed until you do.</li>
+      </ol>
+      <p>
+        Every email includes a link to unsubscribe. Read the <a href={withBase('/privacy/')}>privacy policy</a> for details.
+      </p>
+    </section>
+
+    <section class="newsletter-signup" aria-labelledby="signup-title">
+      <h2 id="signup-title">Sign up</h2>
+      <NewsletterForm id="newsletter-page-form" source="newsletter-page" />
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .newsletter-page {
+    display: grid;
+    gap: var(--space-3xl);
+    padding-block: var(--space-2xl) var(--section-y);
+  }
+
+  .newsletter-what h2,
+  .newsletter-signup h2 {
+    font-size: var(--fs-h3);
+    margin-bottom: var(--space-l);
+  }
+
+  .newsletter-what h3 {
+    font-size: var(--fs-h4);
+    margin: var(--space-xl) 0 var(--space-s);
+  }
+
+  .newsletter-what ul {
+    margin: 0 0 var(--space-l);
+    padding: 0;
+    list-style: none;
+    border-top: var(--rule-thick) solid var(--gv-ink);
+  }
+
+  .newsletter-what ul li {
+    padding-block: var(--space-s);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .newsletter-what ul strong {
+    color: var(--gv-deep-blue);
+  }
+
+  .newsletter-what p {
+    color: var(--color-text-muted);
+  }
+
+  .steps {
+    display: grid;
+    gap: var(--space-xs);
+    margin: 0 0 var(--space-l);
+    padding-left: 1.4rem;
+  }
+
+  .steps li::marker {
+    font-weight: 700;
+    color: var(--gv-deep-blue);
+  }
+
+  .newsletter-signup {
+    align-self: start;
+    padding: clamp(1.25rem, 0.8rem + 2vw, 2.5rem);
+    border: 1.5px solid var(--gv-slate-blue);
+    border-top: 6px solid var(--gv-deep-blue);
+    min-width: 0;
+  }
+
+  @media (min-width: 62em) {
+    .newsletter-page {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    }
+  }
+</style>

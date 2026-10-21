@@ -1,0 +1,120 @@
+---
+/**
+ * Layout for policy pages. While `reviewItems` is non-empty, a visible notice
+ * tells readers the text is awaiting organizer review and lists what still
+ * needs a decision. Empty the list once the text has been approved.
+ */
+import BaseLayout from './BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { formatPlainDate, plainDateIso } from '../lib/dates';
+
+interface Props {
+  title: string;
+  description: string;
+  lead: string;
+  updated: string;
+  reviewItems: string[];
+  toc?: Array<{ id: string; label: string }>;
+}
+
+const { title, description, lead, updated, reviewItems, toc = [] } = Astro.props;
+const updatedDate = new Date(updated);
+---
+
+<BaseLayout title={title} description={description}>
+  <PageHeader title={title} lead={lead}>
+    <p class="meta">
+      <span>Last updated <time datetime={plainDateIso(updatedDate)}>{formatPlainDate(updatedDate)}</time></span>
+    </p>
+  </PageHeader>
+
+  <div class="container legal">
+    {
+      toc.length > 0 && (
+        <nav class="legal__toc" aria-labelledby="toc-title">
+          <h2 id="toc-title">On this page</h2>
+          <ol>
+            {toc.map((item) => (
+              <li>
+                <a href={`#${item.id}`}>{item.label}</a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )
+    }
+    <div class="legal__body">
+      {
+        reviewItems.length > 0 && (
+          <div class="notice notice--warning legal__review">
+            <strong>Draft awaiting review by Get Involved Van’s organizers</strong>
+            <p>This text describes how the website actually works, but these points still need an organizational decision before it is final:</p>
+            <ul>
+              {reviewItems.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+      <div class="prose prose--sans">
+        <slot />
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .legal {
+    display: grid;
+    gap: var(--space-2xl);
+    padding-block: var(--space-2xl) var(--section-y);
+  }
+
+  .legal__toc {
+    align-self: start;
+    padding: var(--space-l);
+    background: var(--color-bg-alt);
+    border-top: var(--rule-thick) solid var(--gv-deep-blue);
+  }
+
+  .legal__toc h2 {
+    font-size: var(--fs-h4);
+    margin-bottom: var(--space-s);
+  }
+
+  .legal__toc ol {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+    padding-left: 1.3rem;
+    font-size: var(--fs-small);
+  }
+
+  .legal__body {
+    display: grid;
+    gap: var(--space-2xl);
+    min-width: 0;
+  }
+
+  .legal__review ul {
+    margin: var(--space-xs) 0 0;
+    padding-left: 1.2rem;
+  }
+
+  .legal__body :global(h2) {
+    scroll-margin-top: calc(var(--header-h) + 1rem);
+  }
+
+  @media (min-width: 62em) {
+    .legal {
+      grid-template-columns: 17rem minmax(0, 1fr);
+      gap: clamp(2rem, 5vw, 5rem);
+    }
+
+    .legal__toc {
+      position: sticky;
+      top: calc(var(--header-h) + 1.5rem);
+    }
+  }
+</style>

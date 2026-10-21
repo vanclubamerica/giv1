@@ -1,0 +1,90 @@
+---
+import { VOLUNTEER_AVAILABILITY, VOLUNTEER_INTERESTS } from '../../../supabase/functions/_shared/forms.ts';
+import { withBase } from '../../lib/urls';
+import Field from './Field.astro';
+import FormShell from './FormShell.astro';
+
+const id = 'volunteer-form';
+---
+
+<FormShell
+  type="volunteer"
+  id={id}
+  submitLabel="Sign up to volunteer"
+  successTitle="You’re signed up"
+  successText="Thanks for offering your time. An organizer will be in touch by email."
+>
+  <div class="form-grid form-grid--2">
+    <Field id={`${id}-name`} name="fullName" label="Full name" required autocomplete="name" maxlength={120} />
+    <Field id={`${id}-email`} name="email" label="Email address" type="email" required autocomplete="email" maxlength={254} spellcheck={false} />
+  </div>
+  <Field
+    id={`${id}-phone`}
+    name="phone"
+    label="Phone number"
+    type="tel"
+    autocomplete="tel"
+    maxlength={30}
+    hint="Only if you’d like a call or text about volunteering."
+    class="volunteer-form__phone"
+  />
+
+  <fieldset class="field" data-multiple="interests" aria-describedby={`${id}-interests-error`}>
+    <legend>How would you like to help?</legend>
+    <p class="field__hint">Choose as many as you like.</p>
+    <div class="choices choices--2">
+      {
+        VOLUNTEER_INTERESTS.map((o) => (
+          <label class="choice">
+            <input type="checkbox" name="interests" value={o.value} data-multiple-item />
+            <span>{o.label}</span>
+          </label>
+        ))
+      }
+    </div>
+    <p class="field__error" id={`${id}-interests-error`} data-error-for="interests"></p>
+  </fieldset>
+
+  <fieldset class="field" data-multiple="availability">
+    <legend>When are you usually available? <span class="field__optional">(optional)</span></legend>
+    <div class="choices choices--2">
+      {
+        VOLUNTEER_AVAILABILITY.map((o) => (
+          <label class="choice">
+            <input type="checkbox" name="availability" value={o.value} data-multiple-item />
+            <span>{o.label}</span>
+          </label>
+        ))
+      }
+    </div>
+    <p class="field__error" data-error-for="availability"></p>
+  </fieldset>
+
+  <Field
+    id={`${id}-comments`}
+    name="comments"
+    label="Anything else we should know?"
+    textarea
+    rows={5}
+    maxlength={2000}
+    hint="Skills, languages you speak, accessibility needs, or questions."
+  />
+
+  <div class="field consent">
+    <label class="choice" for={`${id}-consent`}>
+      <input type="checkbox" id={`${id}-consent`} name="consent" required aria-describedby={`${id}-consent-error`} />
+      <span>
+        Get Involved Van may store these details and contact me about volunteering. I can ask to be removed at any time. See the <a
+          href={withBase('/privacy/')}>privacy policy</a
+        >.
+      </span>
+    </label>
+    <p class="field__error" id={`${id}-consent-error`} data-error-for="consent"></p>
+  </div>
+</FormShell>
+
+<style>
+  .volunteer-form__phone {
+    max-width: 22rem;
+  }
+</style>

@@ -1,0 +1,90 @@
+---
+import type { Petition } from '../../lib/content';
+import { PETITION_STATE_LABELS, petitionAcceptsSignatures, petitionState } from '../../lib/content';
+import { withBase } from '../../lib/urls';
+import Field from './Field.astro';
+import FormShell from './FormShell.astro';
+
+interface Props {
+  petition: Petition;
+}
+
+const { petition } = Astro.props;
+const p = petition.data;
+const accepting = petitionAcceptsSignatures(petition);
+const state = petitionState(petition);
+
+let closedMessage: string | undefined;
+if (p.status !== 'published') {
+  closedMessage =
+    'This petition is a preview and isn’t open for signatures. Signing opens when the petition is published. Sign up for the newsletter to hear when it does.';
+} else if (!accepting) {
+  closedMessage =
+    state === 'upcoming'
+      ? 'This petition isn’t open for signatures yet. Check back soon.'
+      : `This petition is ${PETITION_STATE_LABELS[state].toLowerCase()} and no longer accepts signatures.`;
+}
+
+const id = 'petition-form';
+const consentText = `I support this petition and agree that Get Involved Van may store my name, email address${p.zip !== 'off' ? ' and ZIP code' : ''} to run it, as described in the`;
+---
+
+<FormShell
+  type="petition"
+  id={id}
+  submitLabel="Sign the petition"
+  submitClass="btn--action"
+  successTitle="Thank you for signing"
+  successText="Your signature is on the petition."
+  closedMessage={closedMessage}
+  closedTitle={p.status !== 'published' ? 'Preview: not open yet' : 'Not accepting signatures'}
+  data={{ 'data-zip': p.zip }}
+>
+  <input type="hidden" name="slug" value={petition.id} />
+  <Field id={`${id}-name`} name="fullName" label="Full name" required autocomplete="name" maxlength={120} />
+  <div class="form-grid">
+    <Field
+      id={`${id}-email`}
+      name="email"
+      label="Email address"
+      type="email"
+      required
+      autocomplete="email"
+      maxlength={254}
+      spellcheck={false}
+      hint="Used to prevent duplicate signatures. Never shared or shown publicly."
+    />
+    {
+      p.zip !== 'off' && (
+        <Field
+          id={`${id}-zip`}
+          name="zip"
+          label="ZIP code"
+          required={p.zip === 'required'}
+          autocomplete="postal-code"
+          inputmode="numeric"
+          maxlength={5}
+          hint="Shows where signers live, e.g. 75790."
+        />
+      )
+    }
+  </div>
+
+  <div class="field consent">
+    <label class="choice" for={`${id}-consent`}>
+      <input type="checkbox" id={`${id}-consent`} name="consent" required aria-describedby={`${id}-consent-error ${id}-delivery`} />
+      <span>{consentText} <a href={withBase('/privacy/')}>privacy policy</a>.</span>
+    </label>
+    <p class="field__hint" id={`${id}-delivery`}>{p.deliveryNote}</p>
+    <p class="field__error" id={`${id}-consent-error`} data-error-for="consent"></p>
+  </div>
+
+  <label class="choice" for={`${id}-optin`}>
+    <input type="checkbox" id={`${id}-optin`} name="newsletterOptIn" />
+    <span>Also send me Get Involved Van’s email newsletter (optional, separate from this petition).</span>
+  </label>
+
+  <p class="form-fineprint" slot="after">
+    Signatures are not identity-verified. Each email address can sign once. Please sign only for yourself.
+  </p>
+</FormShell>

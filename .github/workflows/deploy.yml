@@ -1,0 +1,85 @@
+# Builds the site, runs every check, and publishes it to GitHub Pages.
+#
+# One-time setup (repository Settings):
+#   Pages -> Build and deployment -> Source: "GitHub Actions"
+#   Pages -> Custom domain: getinvolvedvan.com  (after DNS is set up)
+#   Secrets and variables -> Actions -> Variables (all optional):
+#     PUBLIC_FORMS_ENDPOINT      Supabase function URL, turns the forms on
+#     PUBLIC_TURNSTILE_SITE_KEY  Cloudflare Turnstile site key
+#     SITE_BASE                  "/giv1/" only while serving from
+#                                vanclubamerica.github.io/giv1/ (leave unset
+#                                once getinvolvedvan.com is live)
+# See README.md for details.
+
+name: Build and deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Daily rebuild at 11:00 UTC (5 or 6 a.m. in Van) so past events, petition
+    # deadlines and campaign dates update without anyone pushing a change.
+    - cron: '0 11 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and verify
+    runs-on: ubuntu-latest
+    env:
+      PUBLIC_FORMS_ENDPOINT: ${{ vars.PUBLIC_FORMS_ENDPOINT }}
+      PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.PUBLIC_TURNSTILE_SITE_KEY }}
+      SITE_BASE: ${{ vars.SITE_BASE }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run check
+
+      - name: Tests (form validation, database rules, request handler)
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify build (links, sitemap, robots.txt, metadata, drafts)
+        run: npm run verify
+
+      - name: Upload site
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5

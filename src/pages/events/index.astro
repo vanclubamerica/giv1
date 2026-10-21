@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import EventList from '../../components/EventList.astro';
+import Icon from '../../components/Icon.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { getPublished, splitEvents } from '../../lib/content';
+import { withBase } from '../../lib/urls';
+
+const { upcoming, past } = splitEvents(await getPublished('events'));
+const recentPast = past.slice(0, 12);
+---
+
+<BaseLayout
+  title="Events"
+  description="Upcoming Get Involved Van events and community gatherings in Van, Texas, with dates, times and locations."
+>
+  <PageHeader title="Events" lead="Community events, meetings and volunteer days organized by Get Involved Van. All times are Central Time." />
+
+  <div class="container events-page">
+    <section aria-labelledby="upcoming-title">
+      <div class="section-head">
+        <h2 id="upcoming-title">Upcoming</h2>
+      </div>
+      {
+        upcoming.length > 0 ? (
+          <EventList events={upcoming} headingLevel="h3" upcoming />
+        ) : (
+          <EmptyState
+            title="No events scheduled yet"
+            text="We list events here once the date, time and place are confirmed. Sign up for email updates to hear about new events first."
+            action={{ label: 'Get updates by email', href: '/newsletter/' }}
+            secondary={{ label: 'Volunteer to help plan one', href: '/volunteer/' }}
+          />
+        )
+      }
+    </section>
+
+    <aside class="meetings" aria-labelledby="meetings-title">
+      <h2 id="meetings-title">Public meetings</h2>
+      <p>
+        City council, school board and county meetings are scheduled by those bodies, not by us. Their own websites post the official dates and agendas.
+      </p>
+      <a class="link-arrow" href={withBase('/resources/')}>
+        Where to find meeting agendas <Icon name="arrow-right" />
+      </a>
+    </aside>
+
+    {
+      recentPast.length > 0 && (
+        <section class="past" aria-labelledby="past-title">
+          <div class="section-head">
+            <h2 id="past-title">Past events</h2>
+          </div>
+          <EventList events={recentPast} headingLevel="h3" compact />
+        </section>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .events-page {
+    display: grid;
+    gap: var(--space-3xl);
+    padding-block: var(--space-2xl) var(--section-y);
+  }
+
+  .events-page > section {
+    min-width: 0;
+  }
+
+  .meetings {
+    align-self: start;
+    padding: var(--space-l);
+    background: var(--color-bg-alt);
+    border-top: var(--rule-thick) solid var(--gv-deep-blue);
+  }
+
+  .meetings h2 {
+    font-size: var(--fs-h4);
+    margin-bottom: var(--space-s);
+  }
+
+  .meetings p {
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  .meetings .link-arrow {
+    margin-top: var(--space-m);
+    font-size: var(--fs-small);
+  }
+
+  @media (min-width: 62em) {
+    .events-page {
+      grid-template-columns: minmax(0, 1fr) 20rem;
+    }
+
+    .past {
+      grid-column: 1;
+    }
+  }
+</style>

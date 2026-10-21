@@ -1,0 +1,14 @@
+# Supabase CLI configuration for Get Involved Van.
+# Only the settings this project relies on are listed; everything else uses
+# the CLI defaults. Setup steps are in docs/backend-setup.md.
+
+project_id = "getinvolvedvan"
+
+[api]
+# Only the public schema is exposed, and every table in it is locked down
+# with row level security. The `reports` schema is intentionally NOT exposed.
+schemas = ["public"]
+
+[functions.submit]
+# The website calls this function without a Supabase key.
+verify_jwt = false

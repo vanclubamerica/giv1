@@ -1,0 +1,111 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleList from '../../components/ArticleList.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { ARTICLE_KIND_LABELS, getPublished, sortArticles } from '../../lib/content';
+import { absoluteUrl } from '../../lib/urls';
+
+const articles = sortArticles(await getPublished('articles'));
+
+const kinds: Array<[keyof typeof ARTICLE_KIND_LABELS, string]> = [
+  ['update', 'News about Get Involved Van’s work and local developments.'],
+  ['explainer', 'Background on how something works, without taking sides.'],
+  ['report', 'What happened at a meeting or event, from someone who was there.'],
+  ['announcement', 'Launches, events and organizational news.'],
+  ['position', 'What Get Involved Van is advocating for, and why.'],
+];
+---
+
+<BaseLayout
+  title="News and Updates"
+  description="Updates, explainers and reports on local issues in Van, Texas from Get Involved Van."
+>
+  <PageHeader title="News and updates" lead="Updates, explainers and meeting reports about civic life in Van. Every piece is labelled so you know what you’re reading." />
+
+  <div class="container news-page">
+    <div class="news-main">
+      {
+        articles.length > 0 ? (
+          <ArticleList articles={articles} variant="lead" headingLevel="h2" />
+        ) : (
+          <EmptyState
+            headingLevel="h2"
+            title="Nothing published yet"
+            text="We publish only when there is something real to report. Our first article will introduce our first community initiative."
+            action={{ label: 'Get new articles by email', href: '/newsletter/' }}
+          />
+        )
+      }
+    </div>
+
+    <aside class="kinds" aria-labelledby="kinds-title">
+      <h2 id="kinds-title">How to read our articles</h2>
+      <dl>
+        {
+          kinds.map(([kind, text]) => (
+            <div>
+              <dt>{ARTICLE_KIND_LABELS[kind]}</dt>
+              <dd>{text}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p class="kinds__rss">
+        Follow with a feed reader: <a href={absoluteUrl('/news/rss.xml')}>RSS feed</a>
+      </p>
+    </aside>
+  </div>
+</BaseLayout>
+
+<style>
+  .news-page {
+    display: grid;
+    gap: var(--space-3xl);
+    padding-block: var(--space-2xl) var(--section-y);
+  }
+
+  .news-main {
+    min-width: 0;
+  }
+
+  .kinds {
+    align-self: start;
+    padding: var(--space-l);
+    background: var(--color-bg-alt);
+    border-top: var(--rule-thick) solid var(--gv-deep-blue);
+  }
+
+  .kinds h2 {
+    font-size: var(--fs-h4);
+    margin-bottom: var(--space-m);
+  }
+
+  .kinds dl {
+    display: grid;
+    gap: var(--space-s);
+    margin: 0;
+  }
+
+  .kinds dt {
+    font-weight: 700;
+    color: var(--gv-deep-blue);
+  }
+
+  .kinds dd {
+    margin: 0;
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  .kinds__rss {
+    margin-top: var(--space-l);
+    font-size: var(--fs-small);
+  }
+
+  @media (min-width: 62em) {
+    .news-page {
+      grid-template-columns: minmax(0, 1fr) 19rem;
+    }
+  }
+</style>

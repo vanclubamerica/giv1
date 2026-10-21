@@ -1,0 +1,318 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ExternalLink from '../components/ExternalLink.astro';
+import Icon from '../components/Icon.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { site } from '../config/site';
+import { withBase } from '../lib/urls';
+
+const principles = [
+  {
+    title: 'Facts first, with sources',
+    text: 'When we write about an issue, we link to the documents behind it: agendas, minutes, budgets, public records. You should be able to check our work.',
+  },
+  {
+    title: 'Clear about our positions',
+    text: 'Explainers and updates describe what is happening. When we argue for something, the article is labelled “Our position” so the difference is never blurred.',
+  },
+  {
+    title: 'Local and specific',
+    text: 'We focus on decisions made in and around Van: by the city, the school district, the county and the community itself.',
+  },
+  {
+    title: 'Civil, always',
+    text: 'People disagree about local questions. We expect disagreement to be respectful, at our events and in anything we publish.',
+  },
+  {
+    title: 'Careful with your information',
+    text: 'We collect only what we need to run a petition, a sign-up or a reply, and we never sell it. Our privacy policy explains exactly what happens to it.',
+  },
+];
+
+const audiences = [
+  ['Students', 'who want to understand how local decisions are made and where their voice fits in.'],
+  ['Families', 'keeping an eye on schools, safety, roads and the services they rely on.'],
+  ['Local business owners', 'whose work depends on a healthy, well-run town.'],
+  ['Volunteers', 'looking for a useful way to give a few hours.'],
+  ['Civic leaders', 'who want more residents informed and in the room.'],
+];
+---
+
+<BaseLayout
+  title="About"
+  description="Get Involved Van is an independent, nonpartisan community organization that helps people in Van, Texas understand local issues and take part in civic life."
+>
+  <PageHeader
+    title="About Get Involved Van"
+    lead="An independent, nonpartisan community organization helping people in Van, Texas understand what’s happening locally and take part in it."
+  />
+
+  <section class="section about-mission" aria-labelledby="mission-title">
+    <div class="container split">
+      <h2 id="mission-title">Why we exist</h2>
+      <div class="split__body">
+        <p class="lead">
+          Get Involved Van exists to inform, connect and empower the people of Van to take part in civic life: to understand local issues, join local
+          initiatives, and act on the things that matter to them.
+        </p>
+        <p>
+          Getting involved doesn’t mean joining a party or signing up to an ideology. It can mean reading the agenda before a city council meeting, showing
+          up to a school board meeting, volunteering for a Saturday, signing a petition, or sharing an idea that makes the town better. We try to make each
+          of those steps easier to find and easier to take.
+        </p>
+        <p>
+          Local government is the level of government closest to daily life, and the one where a single resident can most easily be heard. Decisions about
+          streets, parks, schools and public safety are generally made in public meetings that anyone can attend. We think more people should, and that they should
+          arrive knowing what’s on the table.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="focus-title">
+    <div class="container split">
+      <div>
+        <h2 id="focus-title">Focused on Van</h2>
+        <p class="split__aside-text">Our work is about this town and the decisions that shape it, not national politics.</p>
+      </div>
+      <ul class="audience" role="list">
+        {
+          audiences.map(([who, text]) => (
+            <li>
+              <strong>{who}</strong> {text}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="nonpartisan-title">
+    <div class="container split">
+      <h2 id="nonpartisan-title">Nonpartisan, not passive</h2>
+      <div class="split__body">
+        <p class="lead">
+          Get Involved Van does not endorse candidates or political parties, and everyone is welcome here regardless of how they vote.
+        </p>
+        <p>
+          Being nonpartisan doesn’t mean having no opinions. From time to time we will take a clear position on a specific local question, such as a
+          proposal before the city or the school board, and organize around it. When we do, we’ll say so openly, explain our reasons, show our sources and
+          invite people who disagree to make their case.
+        </p>
+        <div class="notice">
+          <strong>How to tell facts from our opinion</strong>
+          <p>
+            Every article is labelled. <em>Updates</em>, <em>explainers</em> and <em>reports</em> describe what is happening. Articles labelled <em
+              >Our position</em
+            > set out what Get Involved Van is advocating for.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="approach-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="approach-title">How we work</h2>
+      </div>
+      <ol class="principles" role="list">
+        {
+          principles.map((p) => (
+            <li>
+              <h3>{p.title}</h3>
+              <p>{p.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="section partner" aria-labelledby="partner-title">
+    <div class="container">
+      <div class="partner__panel">
+        <div class="partner__label">
+          <span>{site.partner.relationship}</span>
+        </div>
+        <div class="partner__body">
+          <h2 id="partner-title">{site.partner.name}</h2>
+          <p>
+            Get Involved Van is an independent associated partner of the {site.partner.name}, a separate civic organization in Van. Both organizations
+            want more people in Van to take part in local civic life.
+          </p>
+          <p>
+            The two organizations are independent of each other. Get Involved Van is not a chapter, division or program of Club America, sets its own
+            priorities, and speaks only for itself.
+          </p>
+          <ExternalLink href={site.partner.url} class="btn btn--outline partner__link" icon={true}>Visit {site.partner.name}</ExternalLink>
+          <p class="partner__url">{site.partner.url.replace(/^https?:\/\//, '')}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="join-title">
+    <div class="container split">
+      <h2 id="join-title">Ways to take part</h2>
+      <ul class="join-links" role="list">
+        <li>
+          <a class="link-arrow" href={withBase('/take-action/')}>See every way to take action <Icon name="arrow-right" /></a>
+        </li>
+        <li>
+          <a class="link-arrow" href={withBase('/volunteer/')}>Volunteer with us <Icon name="arrow-right" /></a>
+        </li>
+        <li>
+          <a class="link-arrow" href={withBase('/events/')}>Come to an event <Icon name="arrow-right" /></a>
+        </li>
+        <li>
+          <a class="link-arrow" href={withBase('/newsletter/')}>Get email updates <Icon name="arrow-right" /></a>
+        </li>
+        <li>
+          <a class="link-arrow" href={withBase('/contact/')}>Suggest an issue or get in touch <Icon name="arrow-right" /></a>
+        </li>
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .split {
+    display: grid;
+    gap: var(--space-l) var(--space-3xl);
+  }
+
+  .split > h2,
+  .split > div > h2 {
+    max-width: 14ch;
+  }
+
+  .split__body {
+    max-width: 44rem;
+  }
+
+  .split__body > p:not(.lead) {
+    color: var(--color-text-muted);
+  }
+
+  .split__body .notice {
+    margin-top: var(--space-xl);
+  }
+
+  .split__aside-text {
+    margin-top: var(--space-m);
+    max-width: 30ch;
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 62em) {
+    .split {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    }
+  }
+
+  .audience {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: var(--rule-thick) solid var(--gv-ink);
+  }
+
+  .audience li {
+    padding-block: var(--space-m);
+    border-bottom: 1px solid var(--gv-slate-300);
+    font-size: 1.125rem;
+    color: var(--color-text-muted);
+  }
+
+  .audience strong {
+    color: var(--gv-deep-blue);
+    font-weight: 750;
+  }
+
+  .principles {
+    display: grid;
+    gap: 0 var(--space-2xl);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: principle;
+  }
+
+  .principles li {
+    padding-block: var(--space-l);
+    border-bottom: 1px solid var(--gv-slate-300);
+  }
+
+  .principles h3 {
+    font-size: 1.3rem;
+    margin-bottom: var(--space-xs);
+  }
+
+  .principles p {
+    color: var(--color-text-muted);
+    max-width: 52ch;
+  }
+
+  @media (min-width: 56em) {
+    .principles {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .partner__panel {
+    display: grid;
+    border: 1.5px solid var(--gv-slate-blue);
+    border-top: 8px solid var(--gv-deep-blue);
+  }
+
+  .partner__label {
+    padding: var(--space-m) var(--space-l);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg-alt);
+    font-weight: 700;
+    color: var(--gv-deep-blue);
+  }
+
+  .partner__body {
+    padding: clamp(1.5rem, 1rem + 2.5vw, 3rem);
+    max-width: 48rem;
+  }
+
+  .partner__body h2 {
+    margin-bottom: var(--space-m);
+  }
+
+  .partner__body p {
+    color: var(--color-text-muted);
+  }
+
+  .partner__body :global(.partner__link) {
+    margin-top: var(--space-l);
+  }
+
+  .partner__url {
+    margin-top: var(--space-xs);
+    font-size: var(--fs-small);
+  }
+
+  @media (min-width: 56em) {
+    .partner__panel {
+      grid-template-columns: 14rem 1fr;
+    }
+
+    .partner__label {
+      border-bottom: 0;
+      border-right: 1px solid var(--color-border);
+    }
+  }
+
+  .join-links {
+    display: grid;
+    gap: var(--space-m);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 1.15rem;
+  }
+</style>

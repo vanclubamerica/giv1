@@ -1,0 +1,34 @@
+---
+/**
+ * Banner for content that isn't fully public: "preview" pages (built so links
+ * work, but not listed or indexed) and drafts (visible only in local dev).
+ */
+interface Props {
+  status: 'draft' | 'preview' | 'published';
+  /** What this page is, e.g. "article", "petition". */
+  kind: string;
+}
+
+const { status, kind } = Astro.props;
+---
+
+{
+  status !== 'published' && (
+    <div class="container status-notice">
+      <div class="notice notice--preview" role="note">
+        <strong>{status === 'draft' ? `Draft ${kind}: only visible on your computer` : `Preview ${kind}`}</strong>
+        <p>
+          {status === 'draft'
+            ? 'This page is a draft. It is not built for the public website until its status is changed.'
+            : `This ${kind} hasn’t been published yet. It isn’t listed on the site or shown to search engines, and the details may change before it goes live.`}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+<style>
+  .status-notice {
+    margin-top: var(--space-l);
+  }
+</style>

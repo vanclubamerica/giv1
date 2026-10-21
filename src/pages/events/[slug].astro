@@ -1,0 +1,247 @@
+---
+import { getEntry, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ReadingLayout from '../../layouts/ReadingLayout.astro';
+import ContentImage from '../../components/ContentImage.astro';
+import ExternalLink from '../../components/ExternalLink.astro';
+import Icon from '../../components/Icon.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import StatusNotice from '../../components/StatusNotice.astro';
+import RsvpForm from '../../components/forms/RsvpForm.astro';
+import { site } from '../../config/site';
+import { type Event, EVENT_STATUS_LABELS, eventTimes, getBuildable, isUpcoming } from '../../lib/content';
+import { formatLongDate, formatTimeRange, toZonedIso } from '../../lib/dates';
+import { absoluteUrl, links, paths, withBase } from '../../lib/urls';
+
+export async function getStaticPaths() {
+  const events = await getBuildable('events');
+  return events.map((event) => ({ params: { slug: event.id }, props: { event } }));
+}
+
+interface Props {
+  event: Event;
+}
+
+const { event } = Astro.props;
+const d = event.data;
+const { Content } = await render(event);
+const published = d.status === 'published';
+const t = eventTimes(event);
+const upcoming = isUpcoming(event);
+const issueEntry = d.issue ? await getEntry(d.issue) : undefined;
+const issue = issueEntry && issueEntry.data.status === 'published' ? issueEntry : undefined;
+
+const statusMap = {
+  scheduled: 'https://schema.org/EventScheduled',
+  postponed: 'https://schema.org/EventPostponed',
+  cancelled: 'https://schema.org/EventCancelled',
+} as const;
+
+const jsonLd = published
+  ? [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Event',
+        name: d.title,
+        description: d.summary,
+        startDate: d.allDay ? d.start.slice(0, 10) : toZonedIso(t.start),
+        ...(t.end ? { endDate: toZonedIso(t.end) } : {}),
+        eventStatus: statusMap[d.eventStatus],
+        eventAttendanceMode: d.location.online
+          ? 'https://schema.org/OnlineEventAttendanceMode'
+          : 'https://schema.org/OfflineEventAttendanceMode',
+        location: d.location.online
+          ? { '@type': 'VirtualLocation', ...(d.location.url ? { url: d.location.url } : {}) }
+          : {
+              '@type': 'Place',
+              name: d.location.name,
+              ...(d.location.address ? { address: d.location.address } : {}),
+            },
+        organizer: { '@type': 'Organization', name: d.organizer ?? site.name, url: `${site.url}/` },
+        url: absoluteUrl(paths.event(event.id)),
+      },
+    ]
+  : [];
+---
+
+<BaseLayout title={d.title} description={d.summary} noindex={!published} jsonLd={jsonLd}>
+  <StatusNotice status={d.status} kind="event" />
+  <PageHeader title={d.title} lead={d.summary} breadcrumbs={[{ label: 'Events', href: '/events/' }]}>
+    {
+      d.eventStatus !== 'scheduled' && (
+        <p class="meta">
+          <span class:list={['tag', d.eventStatus === 'cancelled' ? 'tag--closed' : 'tag--upcoming']}>{EVENT_STATUS_LABELS[d.eventStatus]}</span>
+        </p>
+      )
+    }
+  </PageHeader>
+
+  {
+    !upcoming && (
+      <div class="container ended">
+        <div class="notice">
+          <strong>This event has ended</strong>
+          <p>
+            See <a href={withBase('/events/')}>upcoming events</a>.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  <ReadingLayout>
+    {
+      d.image && (
+        <div class="frame event-image">
+          <ContentImage src={d.image.src} alt={d.image.alt} position={d.image.position} sizes="(min-width: 62em) 60vw, 100vw" priority />
+        </div>
+      )
+    }
+    <div class="prose">
+      <Content />
+    </div>
+    {
+      issue && (
+        <p>
+          <a class="link-arrow" href={links.issue(issue.id)}>
+            Background: {issue.data.title} <Icon name="arrow-right" />
+          </a>
+        </p>
+      )
+    }
+
+    <Fragment slot="aside">
+      <section class="details" aria-labelledby="details-title">
+        <h2 id="details-title">Event details</h2>
+        <dl>
+          <div>
+            <dt><Icon name="calendar" /> Date</dt>
+            <dd><time datetime={t.start.toISOString()}>{formatLongDate(t.start)}</time></dd>
+          </div>
+          <div>
+            <dt><Icon name="clock" /> Time</dt>
+            <dd>{formatTimeRange(t.start, t.end, d.allDay)}</dd>
+          </div>
+          <div>
+            <dt><Icon name="pin" /> {d.location.online ? 'Online' : 'Location'}</dt>
+            <dd>
+              {d.location.name}
+              {d.location.address && <span class="details__address">{d.location.address}</span>}
+              {
+                d.location.url && (
+                  <ExternalLink href={d.location.url} class="details__map">
+                    {d.location.online ? 'Join link' : 'Map and directions'}
+                  </ExternalLink>
+                )
+              }
+            </dd>
+          </div>
+          {
+            d.organizer && (
+              <div>
+                <dt><Icon name="user" /> Organizer</dt>
+                <dd>{d.organizer}</dd>
+              </div>
+            )
+          }
+        </dl>
+        {
+          upcoming && published && d.eventStatus !== 'cancelled' && (
+            <a class="link-arrow details__ics" href={withBase(`/events/${event.id}.ics`)} download>
+              Add to my calendar <Icon name="arrow-right" />
+            </a>
+          )
+        }
+      </section>
+
+      {
+        upcoming && d.eventStatus !== 'cancelled' && (
+          <section class="register" aria-labelledby="register-title">
+            <h2 id="register-title">{d.registration.type === 'rsvp' ? 'RSVP' : 'Registration'}</h2>
+            {d.registration.type === 'external' && d.registration.url && (
+              <ExternalLink href={d.registration.url} class="btn btn--action btn--block">
+                {d.registration.label ?? 'Register'}
+              </ExternalLink>
+            )}
+            {d.registration.type === 'rsvp' && <RsvpForm event={event} />}
+            {d.registration.type === 'none' && <p>No registration needed. Just come.</p>}
+          </section>
+        )
+      }
+    </Fragment>
+  </ReadingLayout>
+</BaseLayout>
+
+<style>
+  .ended {
+    margin-top: var(--space-l);
+  }
+
+  .event-image {
+    aspect-ratio: 16 / 9;
+  }
+
+  .event-image :global(picture),
+  .event-image :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .details,
+  .register {
+    padding: var(--space-l);
+    border: 1.5px solid var(--gv-slate-blue);
+  }
+
+  .details {
+    border-top: 6px solid var(--gv-deep-blue);
+  }
+
+  .details h2,
+  .register h2 {
+    font-size: var(--fs-h4);
+    margin-bottom: var(--space-m);
+  }
+
+  .details dl {
+    display: grid;
+    gap: var(--space-m);
+    margin: 0;
+  }
+
+  .details dt {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: var(--fs-small);
+    font-weight: 700;
+    color: var(--gv-deep-blue);
+  }
+
+  .details dt :global(svg) {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+
+  .details dd {
+    margin: 0.15rem 0 0;
+  }
+
+  .details__address {
+    display: block;
+    color: var(--color-text-muted);
+    font-size: var(--fs-small);
+  }
+
+  .details :global(.details__map) {
+    display: inline-block;
+    margin-top: 0.25rem;
+    font-size: var(--fs-small);
+  }
+
+  .details__ics {
+    margin-top: var(--space-l);
+    font-size: var(--fs-small);
+  }
+</style>

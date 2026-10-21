@@ -1,0 +1,10 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "src/**/*", "tests/**/*", "scripts/**/*.ts", "supabase/functions/_shared/**/*"],
+  "exclude": ["dist", "node_modules", "supabase/functions/submit/index.ts"],
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "lib": ["ES2023", "DOM", "DOM.Iterable"]
+  }
+}

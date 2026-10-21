@@ -1,0 +1,32 @@
+{
+  "name": "getinvolvedvan",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Website for Get Involved Van, an independent, nonpartisan civic engagement organization serving Van, Texas.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "vitest run",
+    "verify": "node scripts/verify-build.mjs",
+    "backend:local": "node scripts/local-backend.ts"
+  },
+  "dependencies": {
+    "@astrojs/markdown-satteri": "^0.4.5",
+    "astro": "^7.4.2",
+    "satteri": "^0.10.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@electric-sql/pglite": "^0.5.11",
+    "@supabase/supabase-js": "^2.118.0",
+    "@types/node": "^24.19.2",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.5"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}

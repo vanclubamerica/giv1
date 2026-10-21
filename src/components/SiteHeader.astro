@@ -1,0 +1,328 @@
+---
+import { site } from '../config/site';
+import { canonicalPath, isActivePath, withBase } from '../lib/urls';
+
+const current = canonicalPath(Astro.url.pathname);
+const logo = site.brand.logo;
+
+function currentAttr(href: string): 'page' | 'true' | undefined {
+  if (canonicalPath(href) === current) return 'page';
+  return isActivePath(current, href) ? 'true' : undefined;
+}
+
+const secondary = [
+  { label: 'Volunteer', href: '/volunteer/' },
+  { label: 'Petitions', href: '/petitions/' },
+  { label: 'Newsletter', href: '/newsletter/' },
+  { label: 'Resources', href: '/resources/' },
+  { label: 'Support', href: '/support/' },
+];
+---
+
+<header class="site-header" data-site-header>
+  <div class="container site-header__inner">
+    <a class="brand" href={withBase('/')}>
+      <img src={withBase(logo.src)} width={logo.width} height={logo.height} alt={logo.alt} class="brand__logo" />
+      <span class="visually-hidden">, home page</span>
+    </a>
+
+    <nav class="primary-nav" aria-label="Primary">
+      <ul>
+        {
+          site.nav.map((item) => (
+            <li>
+              <a href={withBase(item.href)} aria-current={currentAttr(item.href)}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <a class="btn btn--action header-cta" href={withBase(site.headerCta.href)}>{site.headerCta.label}</a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-toggle>
+      <span class="menu-toggle__bars" aria-hidden="true"><span></span><span></span><span></span></span>
+      <span class="menu-toggle__label">Menu</span>
+    </button>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu" data-mobile-menu hidden>
+    <nav class="container" aria-label="Mobile">
+      <ul class="mobile-menu__primary">
+        {
+          site.nav.map((item) => (
+            <li>
+              <a href={withBase(item.href)} aria-current={currentAttr(item.href)}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a class="btn btn--action btn--lg btn--block" href={withBase(site.headerCta.href)}>{site.headerCta.label}</a>
+      <ul class="mobile-menu__secondary">
+        {
+          secondary.map((item) => (
+            <li>
+              <a href={withBase(item.href)} aria-current={currentAttr(item.href) === 'page' ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.querySelector<HTMLElement>('[data-mobile-menu]');
+  const desktop = window.matchMedia('(min-width: 62em)');
+
+  function setOpen(open: boolean, returnFocus = false) {
+    if (!toggle || !menu) return;
+    toggle.setAttribute('aria-expanded', String(open));
+    menu.hidden = !open;
+    document.documentElement.classList.toggle('menu-open', open);
+    const label = toggle.querySelector('.menu-toggle__label');
+    if (label) label.textContent = open ? 'Close' : 'Menu';
+    if (open) menu.querySelector<HTMLElement>('a')?.focus();
+    else if (returnFocus) toggle.focus();
+  }
+
+  toggle?.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') setOpen(false, true);
+  });
+
+  menu?.addEventListener('click', (event) => {
+    if ((event.target as HTMLElement).closest('a')) setOpen(false);
+  });
+
+  desktop.addEventListener('change', (event) => {
+    if (event.matches) setOpen(false);
+  });
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--gv-white);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-m);
+    min-height: var(--header-h);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    margin-right: auto;
+    padding-block: var(--space-xs);
+  }
+
+  .brand__logo {
+    height: clamp(1.3rem, 0.9rem + 2vw, 2.05rem);
+    width: auto;
+  }
+
+  .primary-nav {
+    display: none;
+  }
+
+  .primary-nav ul {
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 0.2rem + 1.3vw, 1.75rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .primary-nav a {
+    position: relative;
+    display: block;
+    padding-block: 0.6rem;
+    color: var(--gv-ink);
+    font-size: 0.98rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .primary-nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.15rem;
+    height: 3px;
+    background: var(--gv-deep-blue);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur) var(--ease);
+  }
+
+  .primary-nav a:hover {
+    color: var(--gv-deep-blue);
+  }
+
+  .primary-nav a:hover::after {
+    transform: scaleX(1);
+    background: var(--gv-slate-blue);
+  }
+
+  .primary-nav a[aria-current] {
+    color: var(--gv-deep-blue);
+  }
+
+  .primary-nav a[aria-current]::after {
+    transform: scaleX(1);
+    background: var(--gv-deep-blue);
+  }
+
+  .header-cta {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.4rem 0.65rem;
+    border: 1.5px solid var(--gv-deep-blue);
+    border-radius: var(--radius);
+    background: var(--gv-white);
+    color: var(--gv-deep-blue);
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .menu-toggle__bars {
+    display: grid;
+    gap: 4px;
+    width: 18px;
+  }
+
+  .menu-toggle__bars span {
+    display: block;
+    height: 2px;
+    background: currentColor;
+    transition:
+      transform var(--dur) var(--ease),
+      opacity var(--dur) var(--ease);
+  }
+
+  .menu-toggle[aria-expanded='true'] .menu-toggle__bars span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+  .menu-toggle[aria-expanded='true'] .menu-toggle__bars span:nth-child(2) {
+    opacity: 0;
+  }
+  .menu-toggle[aria-expanded='true'] .menu-toggle__bars span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  .mobile-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: calc(100dvh - var(--header-h));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--gv-white);
+    border-bottom: var(--rule-thick) solid var(--gv-deep-blue);
+    box-shadow: 0 24px 40px -24px rgb(20 33 43 / 0.35);
+  }
+
+  .mobile-menu nav {
+    display: grid;
+    gap: var(--space-l);
+    padding-block: var(--space-m) var(--space-xl);
+  }
+
+  .mobile-menu ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mobile-menu__primary li + li {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .mobile-menu__primary a {
+    display: flex;
+    align-items: center;
+    min-height: 3.25rem;
+    color: var(--gv-ink);
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .mobile-menu__primary a[aria-current] {
+    color: var(--gv-deep-blue);
+    box-shadow: inset 4px 0 0 var(--gv-deep-blue);
+    padding-left: 0.85rem;
+  }
+
+  .mobile-menu__secondary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+  }
+
+  .mobile-menu__secondary a {
+    display: inline-block;
+    padding-block: 0.5rem;
+    color: var(--gv-deep-blue);
+    font-weight: 600;
+  }
+
+  @media (min-width: 62em) {
+    .site-header__inner {
+      gap: var(--space-l);
+    }
+
+    .primary-nav,
+    .header-cta {
+      display: block;
+    }
+
+    .header-cta {
+      display: inline-flex;
+      min-height: 2.75rem;
+      padding: 0.55em 1.1em;
+    }
+
+    .menu-toggle,
+    .mobile-menu {
+      display: none !important;
+    }
+  }
+
+  :global(html.menu-open) {
+    overflow: hidden;
+  }
+
+  @media (min-width: 62em) {
+    :global(html.menu-open) {
+      overflow: auto;
+    }
+  }
+</style>

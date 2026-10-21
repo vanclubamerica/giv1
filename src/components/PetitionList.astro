@@ -1,0 +1,124 @@
+---
+import { getEntry } from 'astro:content';
+import type { Petition } from '../lib/content';
+import { PETITION_STATE_LABELS, petitionAcceptsSignatures, petitionState } from '../lib/content';
+import { links } from '../lib/urls';
+import Icon from './Icon.astro';
+
+interface Props {
+  petitions: Petition[];
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { petitions, headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+
+const rows = await Promise.all(
+  petitions.map(async (p) => {
+    const issue = p.data.issue ? await getEntry(p.data.issue) : undefined;
+    return {
+      p,
+      state: petitionState(p),
+      accepting: petitionAcceptsSignatures(p),
+      issue: issue && issue.data.status === 'published' ? issue : undefined,
+    };
+  }),
+);
+---
+
+<ol class="petition-list" role="list">
+  {
+    rows.map(({ p, state, accepting, issue }) => (
+      <li class:list={['petition-item', `petition-item--${state}`]}>
+        <div class="petition-item__body">
+          <p class="petition-item__state">
+            <span class:list={['tag', `tag--${state === 'open' ? 'open' : state}`]}>{PETITION_STATE_LABELS[state]}</span>
+            {issue && (
+              <span>
+                Issue: <a href={links.issue(issue.id)}>{issue.data.title}</a>
+              </span>
+            )}
+          </p>
+          <Heading class="petition-item__title">
+            <a href={links.petition(p.id)}>{p.data.title}</a>
+          </Heading>
+          <p class="petition-item__summary">{p.data.summary}</p>
+        </div>
+        <div class="petition-item__actions">
+          {accepting ? (
+            <a class="btn btn--action" href={`${links.petition(p.id)}#sign`}>
+              Sign the petition<span class="visually-hidden">: {p.data.title}</span>
+            </a>
+          ) : (
+            <a class="link-arrow" href={links.petition(p.id)}>
+              Details<span class="visually-hidden">: {p.data.title}</span>
+              <Icon name="arrow-right" />
+            </a>
+          )}
+        </div>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .petition-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .petition-item {
+    display: grid;
+    gap: var(--space-m);
+    padding-block: var(--space-l);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .petition-item:first-child {
+    border-top: var(--rule-thick) solid var(--color-rule);
+  }
+
+  .petition-item--open {
+    box-shadow: inset 4px 0 0 var(--gv-crimson);
+    padding-left: var(--space-l);
+  }
+
+  .petition-item__state {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-xs) var(--space-m);
+    margin: 0 0 var(--space-s);
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  .petition-item__title {
+    font-size: var(--fs-h3);
+  }
+
+  .petition-item__title a {
+    color: var(--color-heading);
+    text-decoration: none;
+  }
+
+  .petition-item__title a:hover {
+    color: var(--color-link);
+    text-decoration: underline;
+  }
+
+  .petition-item__summary {
+    margin-top: var(--space-s);
+    color: var(--color-text-muted);
+    max-width: 62ch;
+  }
+
+  @media (min-width: 48em) {
+    .petition-item {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: var(--space-2xl);
+    }
+  }
+</style>

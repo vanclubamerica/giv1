@@ -1,0 +1,281 @@
+---
+import { getEntry, render } from 'astro:content';
+import { getImage } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ContentImage from '../../components/ContentImage.astro';
+import Icon from '../../components/Icon.astro';
+import SourceList from '../../components/SourceList.astro';
+import StatusNotice from '../../components/StatusNotice.astro';
+import { site } from '../../config/site';
+import { ARTICLE_KIND_LABELS, type Article, getBuildable, petitionAcceptsSignatures } from '../../lib/content';
+import { formatPlainDate, plainDateIso } from '../../lib/dates';
+import { resolveImage } from '../../lib/images';
+import { absoluteUrl, links, paths, withBase } from '../../lib/urls';
+
+export async function getStaticPaths() {
+  const articles = await getBuildable('articles');
+  return articles.map((article) => ({ params: { slug: article.id }, props: { article } }));
+}
+
+interface Props {
+  article: Article;
+}
+
+const { article } = Astro.props;
+const d = article.data;
+const { Content } = await render(article);
+const published = d.status === 'published';
+const visible = (status: string) => status !== 'draft' || import.meta.env.DEV;
+
+const issueEntry = d.issue ? await getEntry(d.issue) : undefined;
+const issue = issueEntry && visible(issueEntry.data.status) ? issueEntry : undefined;
+const petitionEntry = d.petition ? await getEntry(d.petition) : undefined;
+const petition = petitionEntry && visible(petitionEntry.data.status) ? petitionEntry : undefined;
+
+// Social sharing image: the article photo (cropped to 1200×630) or the site default.
+let shareImage: string | undefined;
+if (d.image) {
+  const img = await getImage({ src: resolveImage(d.image.src), width: 1200, height: 630, fit: 'cover', format: 'jpg' });
+  shareImage = absoluteUrl(img.src);
+}
+
+const jsonLd = published
+  ? [
+      {
+        '@context': 'https://schema.org',
+        '@type': d.kind === 'report' || d.kind === 'update' ? 'NewsArticle' : 'Article',
+        headline: d.title,
+        description: d.excerpt,
+        datePublished: plainDateIso(d.publishedAt),
+        dateModified: plainDateIso(d.updatedAt ?? d.publishedAt),
+        mainEntityOfPage: absoluteUrl(paths.article(article.id)),
+        ...(shareImage ? { image: [shareImage] } : {}),
+        author: d.author ? { '@type': d.author === site.name ? 'Organization' : 'Person', name: d.author } : { '@type': 'Organization', name: site.name },
+        publisher: { '@type': 'Organization', name: site.name, url: `${site.url}/` },
+      },
+    ]
+  : [];
+---
+
+<BaseLayout
+  title={d.title}
+  description={d.excerpt}
+  type="article"
+  image={shareImage}
+  imageAlt={d.image?.alt}
+  publishedTime={published ? d.publishedAt : undefined}
+  modifiedTime={published ? d.updatedAt : undefined}
+  noindex={!published}
+  jsonLd={jsonLd}
+>
+  <StatusNotice status={d.status} kind="article" />
+  <article class="article">
+    <header class="container container--narrow article__header">
+      <nav class="article__crumb" aria-label="Breadcrumb">
+        <a href={withBase('/news/')}><Icon name="arrow-left" /> News and updates</a>
+      </nav>
+      <h1 class="article__title">{d.title}</h1>
+      <p class="lead article__dek">{d.excerpt}</p>
+      <p class="meta article__meta">
+        <span class:list={['article__kind', { 'article__kind--position': d.kind === 'position' }]}>{ARTICLE_KIND_LABELS[d.kind]}</span>
+        <time datetime={plainDateIso(d.publishedAt)}>{formatPlainDate(d.publishedAt)}</time>
+        {d.updatedAt && <span>Updated <time datetime={plainDateIso(d.updatedAt)}>{formatPlainDate(d.updatedAt)}</time></span>}
+        {d.author && <span>By {d.author}</span>}
+      </p>
+    </header>
+
+    {
+      d.image && (
+        <figure class="container article__figure">
+          <div class="frame article__frame">
+            <ContentImage src={d.image.src} alt={d.image.alt} position={d.image.position} sizes="(min-width: 77rem) 77rem, 100vw" priority />
+          </div>
+          {(d.image.caption || d.image.credit) && (
+            <figcaption class="container--narrow">
+              {d.image.caption} {d.image.credit && <span>Photo: {d.image.credit}</span>}
+            </figcaption>
+          )}
+        </figure>
+      )
+    }
+
+    <div class="container container--narrow article__body">
+      {
+        d.kind === 'position' && (
+          <div class="notice position-note">
+            <strong>This is a position statement</strong>
+            <p>It sets out what Get Involved Van is advocating for. Facts it relies on are linked in the sources below.</p>
+          </div>
+        )
+      }
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      {
+        petition && (
+          <aside class="cta-petition" aria-labelledby="cta-petition-title">
+            <h2 id="cta-petition-title">{petition.data.title}</h2>
+            <p>{petition.data.summary}</p>
+            <a class:list={['btn', petitionAcceptsSignatures(petition) ? 'btn--action' : 'btn--outline']} href={links.petition(petition.id)}>
+              {petitionAcceptsSignatures(petition) ? 'Sign the petition' : 'View the petition'}
+              <Icon name="arrow-right" />
+            </a>
+          </aside>
+        )
+      }
+
+      {
+        issue && (
+          <p class="article__issue">
+            <a class="link-arrow" href={links.issue(issue.id)}>
+              More on this issue: {issue.data.title} <Icon name="arrow-right" />
+            </a>
+          </p>
+        )
+      }
+
+      {d.sources.length > 0 && <SourceList sources={d.sources} />}
+
+      {
+        d.tags.length > 0 && (
+          <p class="article__tags">
+            <span class="visually-hidden">Topics:</span>
+            {d.tags.map((tag) => (
+              <span class="article__tag">{tag}</span>
+            ))}
+          </p>
+        )
+      }
+
+      <footer class="article__footer">
+        <a class="link-arrow" href={withBase('/news/')}>
+          More news and updates <Icon name="arrow-right" />
+        </a>
+        <a class="link-arrow" href={withBase('/take-action/')}>
+          Ways to take action <Icon name="arrow-right" />
+        </a>
+      </footer>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .article__header {
+    padding-block: clamp(2rem, 1.5rem + 3vw, 4.5rem) var(--space-xl);
+  }
+
+  .article__crumb a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--fs-small);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .article__crumb a:hover {
+    text-decoration: underline;
+  }
+
+  .article__crumb :global(svg) {
+    width: 1em;
+    height: 1em;
+  }
+
+  .article__title {
+    margin-top: var(--space-l);
+    font-size: clamp(2.2rem, 1.5rem + 3vw, 3.9rem);
+    font-weight: var(--weight-display);
+    line-height: 1.02;
+    letter-spacing: -0.022em;
+  }
+
+  .article__dek {
+    margin-top: var(--space-l);
+    color: var(--color-text-muted);
+  }
+
+  .article__meta {
+    margin-top: var(--space-l);
+    padding-top: var(--space-m);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .article__kind {
+    font-weight: 700;
+    color: var(--gv-deep-blue);
+  }
+
+  .article__kind--position {
+    color: var(--gv-crimson);
+  }
+
+  .article__figure {
+    margin-block: 0 var(--space-2xl);
+  }
+
+  .article__frame {
+    aspect-ratio: 16 / 9;
+  }
+
+  .article__frame :global(picture),
+  .article__frame :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .article__figure figcaption {
+    margin: var(--space-s) auto 0;
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  .article__body {
+    display: grid;
+    gap: var(--space-2xl);
+    padding-bottom: var(--section-y);
+  }
+
+  .cta-petition {
+    padding: var(--space-l);
+    border-left: 6px solid var(--gv-crimson);
+    background: var(--gv-crimson-050);
+  }
+
+  .cta-petition h2 {
+    font-size: var(--fs-h3);
+    margin-bottom: var(--space-xs);
+  }
+
+  .cta-petition p {
+    color: var(--color-text-muted);
+  }
+
+  .cta-petition .btn {
+    margin-top: var(--space-m);
+  }
+
+  .article__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+
+  .article__tag {
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--color-border);
+    font-size: var(--fs-xs);
+    color: var(--color-text-muted);
+  }
+
+  .article__footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m) var(--space-xl);
+    padding-top: var(--space-l);
+    border-top: var(--rule-thick) solid var(--gv-ink);
+  }
+</style>

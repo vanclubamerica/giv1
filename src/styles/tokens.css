@@ -1,0 +1,141 @@
+/* ==========================================================================
+   Get Involved Van — design tokens
+
+   This is the single source of truth for color, type and spacing. Components
+   use the SEMANTIC tokens (--color-*, --btn-*), never raw hex values, so the
+   palette can be adjusted here without touching any component.
+   ========================================================================== */
+
+:root {
+  /* ---- Official brand palette (from getinvolvedvan.pdf) -----------------
+     Do not change these four values without approval. */
+  --gv-deep-blue: #0c5678;   /* primary brand: navigation, primary buttons */
+  --gv-slate-blue: #6d8196;  /* secondary: accents, rules, borders */
+  --gv-crimson: #9a1f27;     /* campaign highlights, petition buttons, key CTAs */
+  --gv-white: #ffffff;       /* backgrounds, contrast, type on dark */
+
+  /* ---- Derived steps of the official colors (hover, depth, tints) ------- */
+  --gv-deep-blue-700: #0a4a68;
+  --gv-deep-blue-800: #083d55;
+  --gv-deep-blue-900: #062d3f;
+  --gv-deep-blue-100: #d9e7ee;
+  --gv-deep-blue-050: #edf4f7;
+  --gv-slate-800: #3a4958;
+  --gv-slate-700: #4a5b6d;   /* muted text on white: 7:1 */
+  --gv-slate-300: #b4c0cb;
+  --gv-slate-200: #d4dbe2;
+  --gv-slate-100: #e7ebf0;
+  --gv-slate-050: #f3f5f8;
+  --gv-crimson-800: #73171d;
+  --gv-crimson-050: #f9eced;
+
+  /* ---- Accessibility neutrals and status colors -------------------------
+     Introduced only where the brand palette can't meet contrast needs. */
+  --gv-ink: #14212b;
+  --gv-success: #1c6b44;
+  --gv-success-bg: #e8f3ed;
+  --gv-warning: #774700;
+  --gv-warning-bg: #fbf1dc;
+
+  /* ---- Semantic color tokens ------------------------------------------- */
+  --color-bg: var(--gv-white);
+  --color-bg-alt: var(--gv-slate-050);
+  --color-bg-tint: var(--gv-deep-blue-050);
+  --color-bg-inverse: var(--gv-deep-blue);
+  --color-bg-inverse-deep: var(--gv-deep-blue-900);
+
+  --color-text: var(--gv-ink);
+  --color-text-muted: var(--gv-slate-700);
+  --color-text-inverse: var(--gv-white);
+  --color-text-inverse-muted: #d3e1e9;
+  --color-heading: var(--gv-ink);
+
+  --color-brand: var(--gv-deep-blue);
+  --color-accent: var(--gv-crimson);
+  --color-secondary: var(--gv-slate-blue);
+
+  --color-border: var(--gv-slate-200);
+  --color-border-strong: var(--gv-slate-blue);
+  --color-rule: var(--gv-ink);
+  --color-border-inverse: rgb(255 255 255 / 0.22);
+
+  --color-link: var(--gv-deep-blue);
+  --color-link-hover: var(--gv-crimson);
+  --color-focus: var(--gv-deep-blue);
+  --color-focus-inverse: var(--gv-white);
+
+  --color-error: var(--gv-crimson);
+  --color-error-bg: var(--gv-crimson-050);
+  --color-success: var(--gv-success);
+  --color-success-bg: var(--gv-success-bg);
+  --color-warning: var(--gv-warning);
+  --color-warning-bg: var(--gv-warning-bg);
+
+  /* ---- Buttons ---------------------------------------------------------- */
+  --btn-primary-bg: var(--gv-deep-blue);
+  --btn-primary-bg-hover: var(--gv-deep-blue-800);
+  --btn-primary-text: var(--gv-white);
+  --btn-action-bg: var(--gv-crimson);
+  --btn-action-bg-hover: var(--gv-crimson-800);
+  --btn-action-text: var(--gv-white);
+  --btn-outline-text: var(--gv-deep-blue);
+  --btn-outline-border: var(--gv-deep-blue);
+  --btn-outline-bg-hover: var(--gv-deep-blue-050);
+  --btn-light-bg: var(--gv-white);
+  --btn-light-text: var(--gv-deep-blue);
+  --btn-light-bg-hover: var(--gv-deep-blue-050);
+
+  /* ---- Typography ------------------------------------------------------
+     One typeface, Public Sans, for headings, reading text and interface. */
+  --font-sans: 'Public Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  --fs-display: clamp(2.4rem, 1.35rem + 4.6vw, 5rem);
+  --fs-h1: clamp(2.1rem, 1.5rem + 2.5vw, 3.5rem);
+  --fs-h2: clamp(1.7rem, 1.35rem + 1.45vw, 2.5rem);
+  --fs-h3: clamp(1.25rem, 1.15rem + 0.45vw, 1.5rem);
+  --fs-h4: 1.125rem;
+  --fs-lead: clamp(1.15rem, 1.06rem + 0.4vw, 1.375rem);
+  --fs-body: 1.0625rem;
+  --fs-prose: clamp(1.0625rem, 1.03rem + 0.15vw, 1.15rem);
+  --fs-small: 0.9375rem;
+  --fs-xs: 0.8125rem;
+
+  --weight-display: 800;
+  --weight-heading: 750;
+  --weight-strong: 650;
+
+  --lh-display: 1.04;
+  --lh-heading: 1.15;
+  --lh-body: 1.6;
+  --lh-prose: 1.7;
+
+  /* ---- Space & layout --------------------------------------------------- */
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-s: 0.75rem;
+  --space-m: 1rem;
+  --space-l: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4.5rem;
+
+  --gutter: clamp(1rem, 0.6rem + 2vw, 2.5rem);
+  --container: 77rem;
+  --container-narrow: 46rem;
+  --measure: 68ch;
+  --section-y: clamp(3.5rem, 2.25rem + 5vw, 7rem);
+  --header-h: 4.25rem;
+
+  --radius: 3px;
+  --rule-thick: 4px;
+  --shadow-raised: 0 1px 2px rgb(20 33 43 / 0.06), 0 10px 30px -12px rgb(20 33 43 / 0.22);
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur: 180ms;
+}
+
+@media (min-width: 64em) {
+  :root {
+    --header-h: 5rem;
+  }
+}

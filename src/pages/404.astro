@@ -1,0 +1,93 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { withBase } from '../lib/urls';
+
+const places = [
+  { label: 'Home', href: '/', text: 'Start from the beginning.' },
+  { label: 'Take Action', href: '/take-action/', text: 'Petitions, volunteering and events.' },
+  { label: 'Local Issues', href: '/issues/', text: 'What we’re following in Van.' },
+  { label: 'News', href: '/news/', text: 'Updates and explainers.' },
+  { label: 'Contact', href: '/contact/', text: 'Tell us what you were looking for.' },
+];
+---
+
+<BaseLayout title="Page not found" description="The page you were looking for isn’t here." noindex>
+  <section class="section not-found">
+    <div class="container not-found__grid">
+      <div>
+        <p class="not-found__code" aria-hidden="true">404</p>
+        <h1>We couldn’t find that page.</h1>
+        <p class="lead">It may have moved, or the link may have a typo. Here are some good places to pick up from.</p>
+      </div>
+      <ul class="not-found__list" role="list">
+        {
+          places.map((p) => (
+            <li>
+              <a class="link-arrow" href={withBase(p.href)}>
+                {p.label} <Icon name="arrow-right" />
+              </a>
+              <span>{p.text}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found__grid {
+    display: grid;
+    gap: var(--space-2xl) var(--space-3xl);
+    align-items: end;
+  }
+
+  .not-found__code {
+    margin: 0 0 var(--space-s);
+    font-size: clamp(4rem, 2rem + 10vw, 9rem);
+    font-weight: var(--weight-display);
+    line-height: 0.9;
+    color: var(--gv-slate-blue);
+  }
+
+  .not-found h1 {
+    font-size: var(--fs-h1);
+    max-width: 16ch;
+  }
+
+  .not-found .lead {
+    margin-top: var(--space-l);
+    max-width: 40ch;
+    color: var(--color-text-muted);
+  }
+
+  .not-found__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: var(--rule-thick) solid var(--gv-ink);
+  }
+
+  .not-found__list li {
+    display: grid;
+    gap: 0.15rem;
+    padding-block: var(--space-m);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .not-found__list .link-arrow {
+    font-size: 1.15rem;
+  }
+
+  .not-found__list span {
+    color: var(--color-text-muted);
+    font-size: var(--fs-small);
+  }
+
+  @media (min-width: 62em) {
+    .not-found__grid {
+      grid-template-columns: 7fr 5fr;
+    }
+  }
+</style>

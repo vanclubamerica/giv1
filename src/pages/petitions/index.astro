@@ -1,0 +1,131 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import PetitionList from '../../components/PetitionList.astro';
+import { getPublished, petitionState, sortPetitions } from '../../lib/content';
+import { withBase } from '../../lib/urls';
+
+const all = sortPetitions(await getPublished('petitions'));
+const open = all.filter((p) => petitionState(p) === 'open');
+const upcoming = all.filter((p) => petitionState(p) === 'upcoming');
+const closed = all.filter((p) => ['closed', 'archived'].includes(petitionState(p)));
+---
+
+<BaseLayout
+  title="Petitions"
+  description="Local petitions organized by Get Involved Van in Van, Texas. See what each petition asks for, who it goes to, and sign the ones you support."
+>
+  <PageHeader
+    title="Petitions"
+    lead="Each petition asks for one specific local outcome. Read what it asks for and who it goes to, and sign if you agree."
+  />
+
+  <div class="container petitions-page">
+    <div class="petitions-main">
+      {
+        open.length > 0 ? (
+          <section aria-labelledby="open-title">
+            <h2 id="open-title" class="group-title">
+              Open for signatures
+            </h2>
+            <PetitionList petitions={open} />
+          </section>
+        ) : (
+          <EmptyState
+            headingLevel="h2"
+            title="No petitions are open right now"
+            text="Our first petition will open alongside our first community initiative. Sign up for email updates and we’ll let you know as soon as it’s live."
+            action={{ label: 'Get notified by email', href: '/newsletter/' }}
+            secondary={{ label: 'Other ways to take action', href: '/take-action/' }}
+          />
+        )
+      }
+
+      {
+        upcoming.length > 0 && (
+          <section aria-labelledby="upcoming-title">
+            <h2 id="upcoming-title" class="group-title">
+              Opening soon
+            </h2>
+            <PetitionList petitions={upcoming} />
+          </section>
+        )
+      }
+
+      {
+        closed.length > 0 && (
+          <section aria-labelledby="closed-title">
+            <h2 id="closed-title" class="group-title">
+              Closed and archived
+            </h2>
+            <PetitionList petitions={closed} />
+          </section>
+        )
+      }
+    </div>
+
+    <aside class="petitions-aside" aria-labelledby="how-petitions">
+      <h2 id="how-petitions">How our petitions work</h2>
+      <ul role="list">
+        <li>One signature per email address, per petition.</li>
+        <li>We ask for your name, email and, for most petitions, your ZIP code. Nothing else.</li>
+        <li>Your email address is never shown publicly or shared with the recipient.</li>
+        <li>Each petition page says exactly what the recipient will receive.</li>
+        <li>Signatures are not identity-verified, so please sign only for yourself.</li>
+      </ul>
+      <p><a href={withBase('/privacy/')}>Read the privacy policy</a></p>
+    </aside>
+  </div>
+</BaseLayout>
+
+<style>
+  .petitions-page {
+    display: grid;
+    gap: var(--space-3xl);
+    padding-block: var(--space-2xl) var(--section-y);
+  }
+
+  .petitions-main {
+    display: grid;
+    gap: var(--space-3xl);
+    align-content: start;
+    min-width: 0;
+  }
+
+  .group-title {
+    font-size: var(--fs-h3);
+    margin-bottom: var(--space-m);
+  }
+
+  .petitions-aside {
+    align-self: start;
+    padding: var(--space-l);
+    background: var(--color-bg-alt);
+    border-top: var(--rule-thick) solid var(--gv-crimson);
+  }
+
+  .petitions-aside h2 {
+    font-size: var(--fs-h4);
+    margin-bottom: var(--space-m);
+  }
+
+  .petitions-aside ul {
+    display: grid;
+    gap: var(--space-s);
+    margin: 0 0 var(--space-m);
+    padding-left: 1.1rem;
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  .petitions-aside p {
+    font-size: var(--fs-small);
+  }
+
+  @media (min-width: 62em) {
+    .petitions-page {
+      grid-template-columns: minmax(0, 1fr) 20rem;
+    }
+  }
+</style>

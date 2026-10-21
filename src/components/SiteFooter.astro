@@ -1,0 +1,217 @@
+---
+import { site } from '../config/site';
+import Icon from './Icon.astro';
+import { withBase } from '../lib/urls';
+
+const year = new Date().getFullYear();
+const logo = site.brand.logoLight;
+---
+
+<footer class="site-footer inverse">
+  <div class="container">
+    <div class="site-footer__top">
+      <div class="site-footer__brand">
+        <a href={withBase('/')} class="site-footer__logo">
+          <img src={withBase(logo.src)} width={logo.width} height={logo.height} alt={logo.alt} loading="lazy" />
+          <span class="visually-hidden">, home page</span>
+        </a>
+        <p>{site.footerSummary}</p>
+        {
+          site.contact.email && (
+            <p class="site-footer__contact">
+              <Icon name="mail" />
+              <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+            </p>
+          )
+        }
+        {
+          site.social.length > 0 && (
+            <ul class="site-footer__social" aria-label="Get Involved Van on social media">
+              {site.social.map((s) => (
+                <li>
+                  <a href={s.url} target="_blank" rel="noopener noreferrer">
+                    {s.label}
+                    <span class="visually-hidden"> (opens in a new tab)</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+
+      <nav class="site-footer__nav" aria-label="Footer">
+        {
+          site.footer.columns.map((col) => (
+            <div>
+              <h2 class="site-footer__heading">{col.heading}</h2>
+              <ul>
+                {col.links.map((link) => (
+                  <li>
+                    <a href={withBase(link.href)}>{link.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </nav>
+    </div>
+
+    <p class="site-footer__partner">
+      <span>{site.partner.relationship}:</span>
+      <a href={site.partner.url} target="_blank" rel="noopener noreferrer">
+        {site.partner.name}<span class="visually-hidden"> (opens in a new tab)</span>
+        <Icon name="external" />
+      </a>
+    </p>
+
+    <div class="site-footer__bottom">
+      <p>&copy; {year} {site.name}. Independent and nonpartisan.</p>
+      <p>Not affiliated with the City of Van, Van ISD, or any government body.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    --color-bg-inverse: var(--gv-deep-blue-900);
+    padding-block: var(--space-3xl) var(--space-xl);
+    font-size: var(--fs-small);
+    border-top: 6px solid var(--gv-deep-blue);
+  }
+
+  .site-footer__top {
+    display: grid;
+    gap: var(--space-2xl);
+    padding-bottom: var(--space-2xl);
+  }
+
+  .site-footer__brand {
+    display: grid;
+    gap: var(--space-m);
+    align-content: start;
+    max-width: 26rem;
+  }
+
+  .site-footer__brand p {
+    margin: 0;
+    color: var(--color-text-inverse-muted);
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+
+  .site-footer__logo {
+    display: inline-block;
+    justify-self: start;
+  }
+
+  .site-footer__logo img {
+    height: 2.1rem;
+    width: auto;
+  }
+
+  .site-footer__contact {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .site-footer__contact :global(svg) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .site-footer__social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-footer__nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: var(--space-xl) var(--space-l);
+  }
+
+  .site-footer__heading {
+    margin-bottom: var(--space-s);
+    padding-bottom: var(--space-xs);
+    border-bottom: 2px solid var(--gv-slate-blue);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: var(--gv-white);
+  }
+
+  .site-footer__nav ul {
+    display: grid;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-footer__nav a,
+  .site-footer__social a {
+    display: inline-block;
+    padding-block: 0.3rem;
+    color: var(--color-text-inverse-muted);
+    font-size: 1rem;
+    text-decoration: none;
+  }
+
+  .site-footer__nav a:hover,
+  .site-footer__social a:hover {
+    color: var(--gv-white);
+    text-decoration: underline;
+  }
+
+  .site-footer__partner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem 0.6rem;
+    margin: 0;
+    padding-block: var(--space-l);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-inverse-muted);
+  }
+
+  .site-footer__partner a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--gv-white);
+    font-weight: 600;
+  }
+
+  .site-footer__partner :global(svg) {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+
+  .site-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-xs) var(--space-xl);
+    padding-top: var(--space-l);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-inverse-muted);
+  }
+
+  .site-footer__bottom p {
+    margin: 0;
+  }
+
+  @media (min-width: 56em) {
+    .site-footer__top {
+      grid-template-columns: minmax(16rem, 1fr) 2fr;
+      gap: var(--space-3xl);
+    }
+  }
+</style>

@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import TokenAction from '../../components/forms/TokenAction.astro';
+import { withBase } from '../../lib/urls';
+---
+
+<BaseLayout title="Unsubscribe" description="Unsubscribe from Get Involved Van email updates." noindex>
+  <PageHeader title="Unsubscribe" lead="Stop receiving Get Involved Van newsletter emails. You can sign up again any time." />
+  <div class="container section--tight unsubscribe">
+    <TokenAction action="newsletter-unsubscribe" buttonLabel="Unsubscribe me" />
+    <p class="muted">
+      Want your data deleted entirely? <a href={withBase('/contact/')}>Contact us</a> and we’ll remove it.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .unsubscribe {
+    display: grid;
+    gap: var(--space-l);
+  }
+</style>

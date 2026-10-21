@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ExternalLink from '../components/ExternalLink.astro';
+import PageHeader from '../components/PageHeader.astro';
+import ContactForm from '../components/forms/ContactForm.astro';
+import { site } from '../config/site';
+---
+
+<BaseLayout
+  title="Contact"
+  description="Contact Get Involved Van in Van, Texas with questions, ideas, local issue suggestions, partnership inquiries or privacy requests."
+>
+  <PageHeader
+    title="Contact us"
+    lead="Questions, ideas, a local issue you think deserves attention, or a correction to something we published: we read every message."
+  />
+
+  <div class="container contact-page">
+    <section class="contact-form" aria-labelledby="form-title">
+      <h2 id="form-title">Send a message</h2>
+      <ContactForm />
+    </section>
+
+    <aside class="contact-aside">
+      <section aria-labelledby="reasons-title">
+        <h2 id="reasons-title">Good reasons to write</h2>
+        <ul role="list">
+          <li><strong>Suggest an issue.</strong> Tell us what’s happening and where we can learn more.</li>
+          <li><strong>Report an error.</strong> Point us to the page and the correct information.</li>
+          <li><strong>Partner with us.</strong> Businesses and community groups are welcome.</li>
+          <li><strong>Privacy requests.</strong> Ask to see, correct or delete information we hold about you. Use the subject “Privacy request”.</li>
+        </ul>
+      </section>
+
+      {
+        (site.contact.email || site.social.length > 0) && (
+          <section aria-labelledby="direct-title">
+            <h2 id="direct-title">Reach us directly</h2>
+            {site.contact.email && (
+              <p>
+                Email: <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+              </p>
+            )}
+            {site.social.length > 0 && (
+              <ul role="list" class="contact-social">
+                {site.social.map((s) => (
+                  <li>
+                    <ExternalLink href={s.url}>{s.label}</ExternalLink>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )
+      }
+
+      <section aria-labelledby="about-title">
+        <h2 id="about-title">About us</h2>
+        <p>{site.name} is an independent, nonpartisan community organization serving {site.location.city}, {site.location.state}.</p>
+      </section>
+    </aside>
+  </div>
+</BaseLayout>
+
+<style>
+  .contact-page {
+    display: grid;
+    gap: var(--space-3xl);
+    padding-block: var(--space-2xl) var(--section-y);
+  }
+
+  .contact-form {
+    padding: clamp(1.25rem, 0.8rem + 2vw, 2.5rem);
+    border: 1.5px solid var(--gv-slate-blue);
+    border-top: 6px solid var(--gv-deep-blue);
+    min-width: 0;
+  }
+
+  .contact-form h2 {
+    font-size: var(--fs-h3);
+    margin-bottom: var(--space-l);
+  }
+
+  .contact-aside {
+    display: grid;
+    gap: var(--space-2xl);
+    align-content: start;
+  }
+
+  .contact-aside h2 {
+    font-size: var(--fs-h4);
+    margin-bottom: var(--space-s);
+    padding-top: var(--space-s);
+    border-top: var(--rule-thick) solid var(--gv-ink);
+  }
+
+  .contact-aside ul {
+    display: grid;
+    gap: var(--space-s);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .contact-aside li,
+  .contact-aside p {
+    color: var(--color-text-muted);
+  }
+
+  .contact-aside strong {
+    color: var(--color-text);
+  }
+
+  @media (min-width: 62em) {
+    .contact-page {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    }
+  }
+</style>

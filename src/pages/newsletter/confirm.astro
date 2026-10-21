@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import TokenAction from '../../components/forms/TokenAction.astro';
+---
+
+<BaseLayout title="Confirm your subscription" description="Confirm your Get Involved Van email subscription." noindex>
+  <PageHeader title="Confirm your subscription" lead="One more click and you’ll start receiving Get Involved Van updates." />
+  <div class="container section--tight">
+    <TokenAction action="newsletter-confirm" buttonLabel="Confirm my subscription" />
+  </div>
+</BaseLayout>

@@ -1,0 +1,26 @@
+---
+/** Link to another website: opens in a new tab, says so to screen readers. */
+import Icon from './Icon.astro';
+
+interface Props {
+  href: string;
+  class?: string;
+  icon?: boolean;
+}
+
+const { href, class: className, icon = true } = Astro.props;
+---
+
+<a href={href} class:list={['external-link', className]} target="_blank" rel="noopener noreferrer"
+  ><slot /><span class="visually-hidden"> (opens in a new tab)</span>{icon && <Icon name="external" class="external-link__icon" />}</a
+>
+
+<style>
+  .external-link :global(.external-link__icon) {
+    display: inline-block;
+    width: 0.85em;
+    height: 0.85em;
+    margin-left: 0.3em;
+    vertical-align: -0.05em;
+  }
+</style>

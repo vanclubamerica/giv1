@@ -1,0 +1,25 @@
+---
+import { withBase } from '../../lib/urls';
+import Field from './Field.astro';
+import FormShell from './FormShell.astro';
+
+const id = 'contact-form';
+---
+
+<FormShell
+  type="contact"
+  id={id}
+  submitLabel="Send message"
+  successTitle="Message received"
+  successText="Thanks for writing. We’ll reply to the email address you gave us."
+>
+  <div class="form-grid form-grid--2">
+    <Field id={`${id}-name`} name="name" label="Your name" required autocomplete="name" maxlength={120} />
+    <Field id={`${id}-email`} name="email" label="Email address" type="email" required autocomplete="email" maxlength={254} spellcheck={false} />
+  </div>
+  <Field id={`${id}-subject`} name="subject" label="Subject" required maxlength={150} />
+  <Field id={`${id}-message`} name="message" label="Message" required textarea rows={8} maxlength={5000} />
+  <p class="form-fineprint">
+    We use your name and email only to reply to you. Details are in our <a href={withBase('/privacy/')}>privacy policy</a>.
+  </p>
+</FormShell>

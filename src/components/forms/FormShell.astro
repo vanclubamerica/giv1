@@ -1,0 +1,167 @@
+---
+/**
+ * Shared wrapper for every public form: error summary, spam protection
+ * (honeypot + Cloudflare Turnstile), submit button, live status message and
+ * the success panel. The form only becomes active when a real backend
+ * endpoint is configured; otherwise it says so plainly and stays disabled.
+ */
+import { forms } from '../../config/forms';
+import { site } from '../../config/site';
+import { withBase } from '../../lib/urls';
+
+interface Props {
+  type: 'petition' | 'volunteer' | 'contact' | 'newsletter' | 'rsvp';
+  id: string;
+  submitLabel: string;
+  /** Extra button class, e.g. "btn--action" for petitions. */
+  submitClass?: string;
+  successTitle: string;
+  successText: string;
+  /** When set, the form is not rendered and this explanation is shown instead. */
+  closedMessage?: string;
+  closedTitle?: string;
+  headingLevel?: 'h2' | 'h3';
+  /** Extra data-* attributes for the <form>, e.g. { 'data-zip': 'required' }. */
+  data?: Record<string, string>;
+  class?: string;
+}
+
+const {
+  type,
+  id,
+  submitLabel,
+  submitClass,
+  successTitle,
+  successText,
+  closedMessage,
+  closedTitle = 'Not accepting submissions',
+  headingLevel = 'h2',
+  data = {},
+  class: className,
+} = Astro.props;
+
+const Heading = headingLevel;
+const active = forms.enabled && !closedMessage;
+---
+
+<div class:list={['form-wrapper', className]} data-form-wrapper>
+  {
+    closedMessage ? (
+      <div class="notice notice--warning">
+        <strong>{closedTitle}</strong>
+        <p>{closedMessage}</p>
+      </div>
+    ) : (
+      <>
+        {!forms.enabled && (
+          <div class="notice notice--warning form-unavailable">
+            <strong>Online submissions aren’t connected yet</strong>
+            <p>
+              This form is being set up and can’t send anything right now, so it’s switched off rather than pretending to work.
+              {site.contact.email ? (
+                <>
+                  {' '}
+                  In the meantime, email <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>.
+                </>
+              ) : (
+                <>
+                  {' '}
+                  Please check back soon, or follow <a href={withBase('/news/')}>our news page</a> for updates.
+                </>
+              )}
+            </p>
+          </div>
+        )}
+        <form
+          class="form"
+          id={id}
+          novalidate
+          data-gv-form={active ? type : undefined}
+          data-endpoint={active ? forms.endpoint : undefined}
+          {...data}
+        >
+          <div class="form-error-summary" data-error-summary hidden tabindex="-1">
+            <Heading data-summary-heading>There’s a problem</Heading>
+            <ul />
+          </div>
+
+          <fieldset class="form__fields" disabled={!active}>
+            <slot />
+          </fieldset>
+
+          <div class="hp-field" aria-hidden="true">
+            <label for={`${id}-website`}>Leave this field empty</label>
+            <input type="text" id={`${id}-website`} name="website" tabindex="-1" autocomplete="off" />
+          </div>
+
+          {active && forms.turnstileSiteKey && (
+            <div
+              class="cf-turnstile"
+              data-sitekey={forms.turnstileSiteKey}
+              data-action={type}
+              data-size="flexible"
+              data-appearance="interaction-only"
+              data-theme="light"
+            />
+          )}
+
+          <div class="form__submit">
+            <button type="submit" class:list={['btn', 'btn--lg', submitClass]} disabled={!active}>
+              {submitLabel}
+            </button>
+          </div>
+
+          <p class="form-status" data-status role="status" aria-live="polite" />
+          <slot name="after" />
+        </form>
+      </>
+    )
+  }
+
+  <div class="form-success" data-success hidden tabindex="-1">
+    <Heading>{successTitle}</Heading>
+    <p data-success-message>{successText}</p>
+    <slot name="success" />
+  </div>
+</div>
+
+<script>
+  import '../../scripts/forms.ts';
+</script>
+
+<style>
+  .form-wrapper {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  .form__fields {
+    display: grid;
+    gap: var(--space-l);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .form__fields:disabled {
+    opacity: 0.7;
+  }
+
+  .form__submit {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-m);
+  }
+
+  .form-success :global(.btn-row) {
+    margin-top: var(--space-l);
+  }
+
+  @media (max-width: 29.99em) {
+    .form__submit .btn {
+      width: 100%;
+    }
+  }
+</style>

@@ -1,0 +1,179 @@
+---
+import type { Event } from '../lib/content';
+import { EVENT_STATUS_LABELS, eventTimes } from '../lib/content';
+import { dateBlock, formatLongDate, formatTimeRange } from '../lib/dates';
+import { links } from '../lib/urls';
+import EmptyState from './EmptyState.astro';
+
+interface Props {
+  events: Event[];
+  headingLevel?: 'h2' | 'h3';
+  /** Upcoming lists hide events that end after the page was built. */
+  upcoming?: boolean;
+  compact?: boolean;
+}
+
+const { events, headingLevel = 'h3', upcoming = false, compact = false } = Astro.props;
+const Heading = headingLevel;
+---
+
+<div class="event-list-wrap">
+<ol class:list={['event-list', { 'event-list--compact': compact }]} role="list" data-upcoming-list={upcoming ? '' : undefined}>
+  {
+    events.map((e) => {
+      const t = eventTimes(e);
+      const block = dateBlock(t.start);
+      const where = e.data.location.online ? `Online: ${e.data.location.name}` : e.data.location.name;
+      return (
+        <li class="event-row" data-event-over={upcoming ? t.over.toISOString() : undefined}>
+          <div class="event-row__date" aria-hidden="true">
+            <span class="event-row__month">{block.month}</span>
+            <span class="event-row__day">{block.day}</span>
+            <span class="event-row__weekday">{block.weekday}</span>
+          </div>
+          <div class="event-row__body">
+            <Heading class="event-row__title">
+              <a href={links.event(e.id)}>{e.data.title}</a>
+            </Heading>
+            <p class="meta event-row__meta">
+              <time datetime={t.start.toISOString()}>{formatLongDate(t.start)}</time>
+              <span>{formatTimeRange(t.start, t.end, e.data.allDay)}</span>
+              <span>{where}</span>
+            </p>
+            {e.data.eventStatus !== 'scheduled' && (
+              <p class="event-row__status">
+                <span class:list={['tag', `tag--${e.data.eventStatus === 'cancelled' ? 'closed' : 'upcoming'}`]}>
+                  {EVENT_STATUS_LABELS[e.data.eventStatus]}
+                </span>
+              </p>
+            )}
+            {!compact && <p class="event-row__summary">{e.data.summary}</p>}
+          </div>
+        </li>
+      );
+    })
+  }
+</ol>
+{
+  upcoming && (
+    <div data-upcoming-empty hidden>
+      <EmptyState
+        compact
+        title="No upcoming events right now"
+        text="Everything on this list has already happened. New events are posted here as soon as they’re confirmed."
+        action={{ label: 'Get updates by email', href: '/newsletter/' }}
+      />
+    </div>
+  )
+}
+</div>
+
+<script>
+  // Pages are rebuilt daily; between builds, hide events that have ended.
+  document.querySelectorAll<HTMLElement>('[data-upcoming-list]').forEach((list) => {
+    const now = Date.now();
+    const rows = Array.from(list.querySelectorAll<HTMLElement>('[data-event-over]'));
+    const remaining = rows.filter((row) => {
+      const over = Date.parse(row.dataset.eventOver ?? '');
+      if (over && over < now) {
+        row.hidden = true;
+        return false;
+      }
+      return true;
+    });
+    if (rows.length && !remaining.length) {
+      list.hidden = true;
+      const empty = list.parentElement?.querySelector<HTMLElement>('[data-upcoming-empty]');
+      if (empty) empty.hidden = false;
+    }
+  });
+</script>
+
+<style>
+  .event-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .event-row {
+    display: grid;
+    grid-template-columns: 4.25rem 1fr;
+    gap: var(--space-l);
+    padding-block: var(--space-l);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .event-row:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .event-row[hidden] {
+    display: none;
+  }
+
+  .event-row__date {
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    padding-block: 0.5rem 0.6rem;
+    border-top: var(--rule-thick) solid var(--gv-crimson);
+    background: var(--color-bg-alt);
+    line-height: 1;
+    text-align: center;
+  }
+
+  .event-row__month {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gv-deep-blue);
+  }
+
+  .event-row__day {
+    margin-block: 0.2rem;
+    font-size: 1.9rem;
+    font-weight: var(--weight-display);
+    color: var(--gv-ink);
+  }
+
+  .event-row__weekday {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+  }
+
+  .event-row__title {
+    font-size: var(--fs-h3);
+  }
+
+  .event-list--compact .event-row__title {
+    font-size: 1.2rem;
+  }
+
+  .event-row__title a {
+    color: var(--color-heading);
+    text-decoration: none;
+  }
+
+  .event-row__title a:hover {
+    color: var(--color-link);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+  .event-row__meta {
+    margin: var(--space-xs) 0 0;
+  }
+
+  .event-row__status {
+    margin: var(--space-s) 0 0;
+  }
+
+  .event-row__summary {
+    margin-top: var(--space-s);
+    color: var(--color-text-muted);
+    max-width: 62ch;
+  }
+</style>

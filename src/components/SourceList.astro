@@ -1,0 +1,78 @@
+---
+/** Numbered list of outside sources for an article, issue or petition. */
+import ExternalLink from './ExternalLink.astro';
+import { formatPlainDate } from '../lib/dates';
+
+interface Source {
+  title: string;
+  url: string;
+  publisher?: string;
+  accessed?: Date;
+}
+
+interface Props {
+  sources: Source[];
+  heading?: string;
+}
+
+const { sources, heading = 'Sources' } = Astro.props;
+---
+
+{
+  sources.length > 0 && (
+    <section class="sources" aria-labelledby="sources-heading">
+      <h2 id="sources-heading">{heading}</h2>
+      <ol>
+        {sources.map((s) => (
+          <li>
+            <ExternalLink href={s.url}>{s.title}</ExternalLink>
+            {(s.publisher || s.accessed) && (
+              <span class="sources__meta">
+                {s.publisher}
+                {s.publisher && s.accessed && ' · '}
+                {s.accessed && `checked ${formatPlainDate(s.accessed)}`}
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
+      <p class="sources__note">Links go to outside websites that Get Involved Van does not control.</p>
+    </section>
+  )
+}
+
+<style>
+  .sources {
+    padding-top: var(--space-m);
+    border-top: var(--rule-thick) solid var(--color-rule);
+  }
+
+  .sources h2 {
+    font-size: var(--fs-h4);
+    margin-bottom: var(--space-s);
+  }
+
+  .sources ol {
+    display: grid;
+    gap: var(--space-s);
+    margin: 0;
+    padding-left: 1.4rem;
+  }
+
+  .sources li::marker {
+    font-weight: 700;
+    color: var(--color-secondary);
+  }
+
+  .sources__meta {
+    display: block;
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  .sources__note {
+    margin-top: var(--space-m);
+    font-size: var(--fs-xs);
+    color: var(--color-text-muted);
+  }
+</style>

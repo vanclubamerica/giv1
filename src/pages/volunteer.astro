@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import VolunteerForm from '../components/forms/VolunteerForm.astro';
+import { withBase } from '../lib/urls';
+
+const expectations = [
+  {
+    title: 'No minimum commitment',
+    text: 'Help once, or help every month. Tell us what you can do and we’ll match it to what’s needed.',
+  },
+  {
+    title: 'A real person follows up',
+    text: 'An organizer will email you about opportunities that fit your interests and availability.',
+  },
+  {
+    title: 'Your details stay private',
+    text: 'Volunteer information is stored securely, seen only by organizers, and never sold or published.',
+  },
+];
+---
+
+<BaseLayout
+  title="Volunteer"
+  description="Volunteer with Get Involved Van in Van, Texas. Help at events, talk with neighbors, research local issues, or lend a skill."
+>
+  <PageHeader
+    title="Volunteer with us"
+    lead="Help at events, talk with neighbors, dig into public records, or lend a skill you already have. Every bit of time helps."
+  />
+
+  <div class="container volunteer-page">
+    <div class="volunteer-info">
+      <h2>What to expect</h2>
+      <dl class="expect">
+        {
+          expectations.map((e) => (
+            <div>
+              <dt>{e.title}</dt>
+              <dd>{e.text}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p class="volunteer-note">
+        Questions first? <a href={withBase('/contact/')}>Send us a message</a>.
+      </p>
+    </div>
+
+    <section class="volunteer-form" aria-labelledby="form-title">
+      <h2 id="form-title">Sign up</h2>
+      <p class="volunteer-form__intro">Fields marked “optional” can be left blank. Everything else is required.</p>
+      <VolunteerForm />
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .volunteer-page {
+    display: grid;
+    gap: var(--space-3xl);
+    padding-block: var(--space-2xl) var(--section-y);
+  }
+
+  .volunteer-info h2,
+  .volunteer-form h2 {
+    font-size: var(--fs-h3);
+  }
+
+  .expect {
+    margin: var(--space-l) 0 0;
+    border-top: var(--rule-thick) solid var(--gv-ink);
+  }
+
+  .expect div {
+    padding-block: var(--space-m);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .expect dt {
+    font-weight: 750;
+    font-size: 1.1rem;
+    color: var(--gv-deep-blue);
+  }
+
+  .expect dd {
+    margin: 0.25rem 0 0;
+    color: var(--color-text-muted);
+  }
+
+  .volunteer-note {
+    margin-top: var(--space-l);
+  }
+
+  .volunteer-form {
+    padding: clamp(1.25rem, 0.8rem + 2vw, 2.5rem);
+    border: 1.5px solid var(--gv-slate-blue);
+    border-top: 6px solid var(--gv-deep-blue);
+    min-width: 0;
+  }
+
+  .volunteer-form__intro {
+    margin: var(--space-xs) 0 var(--space-l);
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 62em) {
+    .volunteer-page {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+      align-items: start;
+    }
+
+    .volunteer-info {
+      position: sticky;
+      top: calc(var(--header-h) + 2rem);
+    }
+  }
+</style>

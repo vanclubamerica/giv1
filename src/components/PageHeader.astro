@@ -1,0 +1,117 @@
+---
+/**
+ * Inner-page header: optional breadcrumb trail, title, lead paragraph and a
+ * slot for meta information. Variants keep pages from all looking the same.
+ */
+import { withBase } from '../lib/urls';
+
+interface Crumb {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  title: string;
+  lead?: string;
+  breadcrumbs?: Crumb[];
+  variant?: 'plain' | 'tint' | 'inverse';
+  /** Narrow column for article-like pages. */
+  narrow?: boolean;
+}
+
+const { title, lead, breadcrumbs = [], variant = 'plain', narrow = false } = Astro.props;
+---
+
+<header class:list={['page-header', `page-header--${variant}`, { inverse: variant === 'inverse' }]}>
+  <div class:list={['container', { 'container--narrow': narrow }]}>
+    {
+      breadcrumbs.length > 0 && (
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <ol>
+            {breadcrumbs.map((crumb) => (
+              <li>
+                <a href={withBase(crumb.href)}>{crumb.label}</a>
+              </li>
+            ))}
+            <li aria-current="page">{title}</li>
+          </ol>
+        </nav>
+      )
+    }
+    <h1 class="page-header__title">{title}</h1>
+    {lead && <p class="lead page-header__lead">{lead}</p>}
+    <slot />
+  </div>
+</header>
+
+<style>
+  .page-header {
+    padding-block: clamp(2.5rem, 1.8rem + 3.5vw, 5rem) clamp(2rem, 1.5rem + 2.5vw, 3.75rem);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .page-header--tint {
+    background: var(--color-bg-alt);
+  }
+
+  .page-header--inverse {
+    border-bottom: 0;
+    border-top: 1px solid var(--gv-deep-blue-700);
+  }
+
+  .page-header__title {
+    max-width: 22ch;
+    font-size: var(--fs-h1);
+    font-weight: var(--weight-display);
+    line-height: 1.02;
+    letter-spacing: -0.022em;
+  }
+
+  .page-header__lead {
+    max-width: 58ch;
+    margin: var(--space-l) 0 0;
+    color: var(--color-text-muted);
+  }
+
+  .page-header--inverse .page-header__lead {
+    color: var(--color-text-inverse-muted);
+  }
+
+  .page-header :global(.meta) {
+    margin-top: var(--space-l);
+  }
+
+  .breadcrumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    margin: 0 0 var(--space-l);
+    padding: 0;
+    list-style: none;
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  .breadcrumbs li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .breadcrumbs li + li::before {
+    content: '/';
+    color: var(--color-secondary);
+  }
+
+  .breadcrumbs li[aria-current] {
+    max-width: 28ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .breadcrumbs a {
+    color: var(--color-link);
+    font-weight: 600;
+  }
+</style>

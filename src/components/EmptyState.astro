@@ -1,0 +1,72 @@
+---
+/**
+ * Shown where a list has nothing published yet. Always points somewhere
+ * useful instead of leaving a dead end.
+ */
+import Icon from './Icon.astro';
+import { withBase } from '../lib/urls';
+
+interface Props {
+  title: string;
+  text: string;
+  action?: { label: string; href: string };
+  secondary?: { label: string; href: string };
+  compact?: boolean;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { title, text, action, secondary, compact = false, headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+---
+
+<div class:list={['empty-state', { 'empty-state--compact': compact }]}>
+  <Heading class="empty-state__title">{title}</Heading>
+  <p>{text}</p>
+  {
+    (action || secondary) && (
+      <div class="empty-state__actions">
+        {action && (
+          <a class="link-arrow" href={withBase(action.href)}>
+            {action.label}
+            <Icon name="arrow-right" />
+          </a>
+        )}
+        {secondary && (
+          <a class="link-arrow" href={withBase(secondary.href)}>
+            {secondary.label}
+            <Icon name="arrow-right" />
+          </a>
+        )}
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .empty-state {
+    padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    border: 1.5px dashed var(--gv-slate-300);
+    background: var(--color-bg);
+  }
+
+  .empty-state--compact {
+    padding: var(--space-l);
+  }
+
+  .empty-state__title {
+    font-size: var(--fs-h3);
+    margin-bottom: var(--space-xs);
+  }
+
+  .empty-state p {
+    max-width: 52ch;
+    color: var(--color-text-muted);
+  }
+
+  .empty-state__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s) var(--space-xl);
+    margin-top: var(--space-m);
+  }
+</style>

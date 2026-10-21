@@ -1,0 +1,176 @@
+---
+import LegalLayout from '../layouts/LegalLayout.astro';
+import { site } from '../config/site';
+import { withBase } from '../lib/urls';
+
+// Remove items from this list as the organization decides them, then update
+// the wording below to match. When the list is empty the review notice disappears.
+const reviewItems = [
+  'How long each kind of record is kept (the periods below are proposals).',
+  'Which Supabase data region the database uses (chosen when the project is created).',
+  'How quickly the organization commits to answering privacy requests.',
+  'Whether petition signer names and ZIP codes are shared with recipients by default.',
+  'Whether to set a minimum age for petitions, volunteering and the newsletter.',
+];
+
+const toc = [
+  { id: 'summary', label: 'Summary' },
+  { id: 'what-we-collect', label: 'What we collect and why' },
+  { id: 'automatic', label: 'Information collected automatically' },
+  { id: 'providers', label: 'Service providers' },
+  { id: 'sharing', label: 'When we share information' },
+  { id: 'retention', label: 'How long we keep it' },
+  { id: 'choices', label: 'Your choices and requests' },
+  { id: 'security', label: 'Security' },
+  { id: 'children', label: 'Children' },
+  { id: 'changes', label: 'Changes and contact' },
+];
+---
+
+<LegalLayout
+  title="Privacy Policy"
+  description="How Get Involved Van collects, uses and protects information submitted through petitions, volunteer sign-ups, contact messages and the newsletter."
+  lead="What we collect through this website, why, who processes it for us, and how to ask us to change or delete it."
+  updated="2026-10-21"
+  reviewItems={reviewItems}
+  toc={toc}
+>
+  <h2 id="summary">Summary</h2>
+  <ul>
+    <li>We collect only what you type into our forms, plus the minimum technical data needed to block spam.</li>
+    <li>We use it to run petitions, coordinate volunteers, answer messages and send the newsletter you asked for.</li>
+    <li>We do not sell personal information, and we don’t use advertising trackers, analytics tools or tracking cookies.</li>
+    <li>You can unsubscribe at any time and ask us to see, correct or delete what we hold about you.</li>
+  </ul>
+  <p>
+    {site.name} is an independent, nonpartisan community organization serving {site.location.city}, {site.location.state}. In this policy “we” and “us”
+    mean {site.name}.
+  </p>
+
+  <h2 id="what-we-collect">What we collect and why</h2>
+  <table class="stack-table">
+    <thead>
+      <tr><th scope="col">When you…</th><th scope="col">We collect</th><th scope="col">We use it to</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Sign a petition</th>
+        <td data-label="We collect">Full name, email address, ZIP code (when the petition asks for it), the petition you signed, whether you also asked for the newsletter, and the time you signed.</td>
+        <td data-label="We use it to">Record your support, prevent duplicate signatures, and deliver the petition as described on its page.</td>
+      </tr>
+      <tr>
+        <th scope="row">Sign up to volunteer</th>
+        <td data-label="We collect">Full name, email address, phone number (optional), the ways you’d like to help, your availability and any comments.</td>
+        <td data-label="We use it to">Contact you about volunteer opportunities that fit.</td>
+      </tr>
+      <tr>
+        <th scope="row">Send a message</th>
+        <td data-label="We collect">Name, email address, subject and message.</td>
+        <td data-label="We use it to">Read and reply to your message.</td>
+      </tr>
+      <tr>
+        <th scope="row">Join the newsletter</th>
+        <td data-label="We collect">Email address, where you signed up, and when you confirmed or unsubscribed.</td>
+        <td data-label="We use it to">Send the updates you asked for, and honor your unsubscribe request.</td>
+      </tr>
+      <tr>
+        <th scope="row">RSVP to an event</th>
+        <td data-label="We collect">Full name, email address and the number of people coming.</td>
+        <td data-label="We use it to">Plan the event and contact you about changes to it.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    Each form also records which version of its consent statement you agreed to. Newsletter sign-ups use double opt-in: you are not subscribed until
+    you click the link in the confirmation email we send.
+  </p>
+  <p>
+    Petition signatures are not identity-verified. We limit each petition to one signature per email address, and we may remove signatures that appear
+    automated or fraudulent.
+  </p>
+
+  <h2 id="automatic">Information collected automatically</h2>
+  <ul>
+    <li>
+      <strong>Spam protection.</strong> Our forms may use Cloudflare Turnstile to tell people apart from automated bots. Turnstile processes technical
+      information such as your IP address and browser characteristics under Cloudflare’s own privacy policy.
+    </li>
+    <li>
+      <strong>Rate limiting.</strong> To stop floods of fake submissions, we store a one-way, salted fingerprint (hash) of your IP address with the time
+      of each submission. We never store the IP address itself, and these fingerprints are deleted automatically after two days.
+    </li>
+    <li>
+      <strong>Hosting logs.</strong> The companies that host this website and our form service may keep standard server logs (such as IP addresses and
+      request times) for security and reliability. Our own code does not log names, email addresses or messages.
+    </li>
+    <li>
+      <strong>No tracking.</strong> We don’t use analytics, advertising pixels or tracking cookies. Our fonts are hosted on this website, so loading a
+      page doesn’t contact a font service. Your browser’s session storage remembers, for the current visit only, that the loading screen has already
+      been shown; it contains no personal information.
+    </li>
+  </ul>
+
+  <h2 id="providers">Service providers</h2>
+  <p>We rely on a small number of companies to run the website. They process information on our behalf and only as needed to provide their service:</p>
+  <ul>
+    <li><strong>GitHub</strong> hosts the public website (GitHub Pages).</li>
+    <li><strong>Supabase</strong> stores form submissions in a database and runs the code that receives them.</li>
+    <li><strong>Cloudflare</strong> provides Turnstile spam protection on forms.</li>
+    <li><strong>Resend</strong> sends our transactional email: newsletter confirmations and notices to our organizers about new messages and volunteer sign-ups.</li>
+  </ul>
+  <p>These services may store and process information in the United States or other countries where they operate.</p>
+
+  <h2 id="sharing">When we share information</h2>
+  <ul>
+    <li>
+      <strong>Petition recipients.</strong> Each petition page states exactly what its recipient will receive. By default that is signers’ names and
+      ZIP codes. We never give recipients your email address.
+    </li>
+    <li><strong>Organizers.</strong> Our authorized organizers can see submissions in order to do the work you signed up for.</li>
+    <li><strong>The law.</strong> We may disclose information if we are legally required to.</li>
+  </ul>
+  <p>We do not sell, rent or trade personal information, and we don’t publish signer names or email addresses on this website.</p>
+
+  <h2 id="retention">How long we keep it</h2>
+  <ul>
+    <li>Petition signatures: until the petition is delivered or closed, then up to two years as a record of the campaign.</li>
+    <li>Volunteer sign-ups: until you ask us to remove them, or after two years without contact.</li>
+    <li>Contact messages: up to two years.</li>
+    <li>
+      Newsletter: while you are subscribed. After you unsubscribe we keep your email address marked “unsubscribed” only so we don’t contact you again,
+      unless you ask us to delete it entirely.
+    </li>
+    <li>Rate-limiting fingerprints: two days.</li>
+  </ul>
+
+  <h2 id="choices">Your choices and requests</h2>
+  <ul>
+    <li>Unsubscribe from the newsletter at any time using the link in any of our emails.</li>
+    <li>
+      Ask to see, correct or delete the information we hold about you by <a href={withBase('/contact/')}>contacting us</a> with the subject “Privacy
+      request”{site.contact.email ? <> or emailing <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a></> : null}. We may need to confirm the request comes from you, for example by replying to the email address
+      in question.
+    </li>
+    <li>We aim to respond to privacy requests within 30 days.</li>
+  </ul>
+
+  <h2 id="security">Security</h2>
+  <p>
+    The website and our form service use encrypted HTTPS connections. Submissions are stored in a database that the public cannot read: access is
+    limited to the server code that saves submissions and to organizers who sign in to the database dashboard. No system is perfectly secure, but we
+    collect as little as possible to limit the risk.
+  </p>
+
+  <h2 id="children">Children</h2>
+  <p>
+    This website is for a general audience, and we welcome students who want to learn about local civic life. We don’t knowingly collect personal
+    information from children under 13. If you believe a child under 13 has sent us information, contact us and we will delete it.
+  </p>
+
+  <h2 id="changes">Changes and contact</h2>
+  <p>
+    If we change this policy we will update this page and the “last updated” date above. Questions about privacy are welcome through our <a
+      href={withBase('/contact/')}>contact page</a
+    >.
+  </p>
+</LegalLayout>

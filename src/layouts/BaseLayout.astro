@@ -1,0 +1,69 @@
+---
+import '../styles/global.css';
+import publicSansLatin from '../assets/fonts/public-sans-latin-wght-normal.woff2?url';
+import SEO, { type SeoProps } from '../components/SEO.astro';
+import Loader from '../components/Loader.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { site } from '../config/site';
+import { absoluteUrl, withBase } from '../lib/urls';
+
+type Props = SeoProps;
+
+const { jsonLd = [], ...seo } = Astro.props;
+
+const organization = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': `${site.url}/#organization`,
+  name: site.name,
+  url: `${site.url}/`,
+  description: site.description,
+  areaServed: {
+    '@type': 'City',
+    name: 'Van, Texas',
+    containedInPlace: { '@type': 'AdministrativeArea', name: site.location.county },
+  },
+  ...(site.contact.email ? { email: site.contact.email } : {}),
+  ...(site.social.length ? { sameAs: site.social.map((s) => s.url) } : {}),
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <SEO {...seo} jsonLd={[organization, ...jsonLd]} />
+    <meta name="theme-color" content={site.brand.themeColor} />
+    <link rel="icon" href={withBase(site.brand.favicon)} type="image/svg+xml" />
+    <link rel="icon" href={withBase(site.brand.faviconPng)} type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href={withBase(site.brand.appleTouchIcon)} />
+    <link rel="alternate" type="application/rss+xml" title={`${site.name} news`} href={absoluteUrl('/news/rss.xml')} />
+    <link rel="sitemap" type="application/xml" href={absoluteUrl('/sitemap.xml')} />
+    <link rel="preload" href={publicSansLatin} as="font" type="font/woff2" crossorigin />
+    <style is:inline>
+      .gv-loader{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;background:#0c5678;opacity:0;transition:opacity .22s ease}
+      .gv-loader[hidden]{display:none}
+      .gv-loader.is-visible{opacity:1}
+      .gv-loader__inner{display:grid;justify-items:center;gap:1.5rem;padding:1.5rem}
+      .gv-loader__logo{width:min(15rem,68vw);height:auto}
+      .gv-loader__bar{display:flex;gap:6px;padding-top:2px}
+      .gv-loader__bar span{display:block;width:30px;height:4px;opacity:.3;animation:gv-pulse 1.2s ease-in-out infinite}
+      .gv-loader__bar span:nth-child(1){background:#9a1f27;box-shadow:0 0 0 1px rgba(255,255,255,.18)}
+      .gv-loader__bar span:nth-child(2){background:#6d8196;animation-delay:.2s}
+      .gv-loader__bar span:nth-child(3){background:#fff;animation-delay:.4s}
+      @keyframes gv-pulse{0%,100%{opacity:.3}45%{opacity:1}}
+      @media (prefers-reduced-motion:reduce){.gv-loader{transition:none}.gv-loader__bar span{animation:none;opacity:1}}
+    </style>
+  </head>
+  <body>
+    <Loader />
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <SiteHeader />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>

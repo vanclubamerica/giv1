@@ -1,0 +1,55 @@
+---
+/**
+ * Newsletter confirm / unsubscribe action. Requires a button press so that
+ * email security scanners that open links can't confirm or unsubscribe
+ * anyone by accident.
+ */
+import { forms } from '../../config/forms';
+import { withBase } from '../../lib/urls';
+
+interface Props {
+  action: 'newsletter-confirm' | 'newsletter-unsubscribe';
+  buttonLabel: string;
+}
+
+const { action, buttonLabel } = Astro.props;
+---
+
+<div class="token-action" data-token-action={forms.enabled ? action : undefined} data-endpoint={forms.enabled ? forms.endpoint : undefined}>
+  {
+    forms.enabled ? (
+      <>
+        <button type="button" class:list={['btn', 'btn--lg', action === 'newsletter-unsubscribe' ? 'btn--outline' : '']}>
+          {buttonLabel}
+        </button>
+        <div class="notice notice--warning" data-missing-token hidden>
+          <strong>This link is incomplete</strong>
+          <p>
+            Open the link from your email again, or copy the whole address into your browser. You can also{' '}
+            <a href={withBase('/contact/')}>contact us</a> and we’ll take care of it.
+          </p>
+        </div>
+        <p data-result hidden tabindex="-1" role="status" />
+      </>
+    ) : (
+      <div class="notice notice--warning">
+        <strong>Email subscriptions aren’t connected yet</strong>
+        <p>
+          This page will work once the newsletter service is set up. If you need help, <a href={withBase('/contact/')}>contact us</a>.
+        </p>
+      </div>
+    )
+  }
+</div>
+
+<script>
+  import '../../scripts/forms.ts';
+</script>
+
+<style>
+  .token-action {
+    display: grid;
+    gap: var(--space-l);
+    justify-items: start;
+  }
+</style>

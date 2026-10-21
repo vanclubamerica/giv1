@@ -1,0 +1,191 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ReadingLayout from '../../layouts/ReadingLayout.astro';
+import ArticleList from '../../components/ArticleList.astro';
+import ContentImage from '../../components/ContentImage.astro';
+import Icon from '../../components/Icon.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import PetitionList from '../../components/PetitionList.astro';
+import SourceList from '../../components/SourceList.astro';
+import StatusNotice from '../../components/StatusNotice.astro';
+import { type Issue, ISSUE_STATE_LABELS, getBuildable, getPublished, sortArticles, sortPetitions } from '../../lib/content';
+import { formatPlainDate, plainDateIso } from '../../lib/dates';
+import { isExternal, withBase } from '../../lib/urls';
+
+export async function getStaticPaths() {
+  const issues = await getBuildable('issues');
+  return issues.map((issue) => ({ params: { slug: issue.id }, props: { issue } }));
+}
+
+interface Props {
+  issue: Issue;
+}
+
+const { issue } = Astro.props;
+const d = issue.data;
+const { Content } = await render(issue);
+const published = d.status === 'published';
+const updated = d.updatedAt ?? d.publishedAt;
+
+const articles = sortArticles((await getPublished('articles')).filter((a) => a.data.issue?.id === issue.id));
+const petitions = sortPetitions((await getPublished('petitions')).filter((p) => p.data.issue?.id === issue.id));
+---
+
+<BaseLayout title={d.title} description={d.summary} noindex={!published}>
+  <StatusNotice status={d.status} kind="issue" />
+  <PageHeader title={d.title} lead={d.summary} breadcrumbs={[{ label: 'Issues', href: '/issues/' }]}>
+    <p class="meta">
+      <span class:list={['tag', `tag--${d.state}`]}>{ISSUE_STATE_LABELS[d.state]}</span>
+      <span>Published <time datetime={plainDateIso(d.publishedAt)}>{formatPlainDate(d.publishedAt)}</time></span>
+      {d.updatedAt && <span>Updated <time datetime={plainDateIso(updated)}>{formatPlainDate(updated)}</time></span>}
+    </p>
+  </PageHeader>
+
+  <ReadingLayout>
+    {
+      d.image && (
+        <figure class="lead-figure">
+          <div class="frame lead-figure__frame">
+            <ContentImage src={d.image.src} alt={d.image.alt} position={d.image.position} sizes="(min-width: 62em) 60vw, 100vw" priority />
+          </div>
+          {(d.image.caption || d.image.credit) && (
+            <figcaption>
+              {d.image.caption} {d.image.credit && <span class="credit">Photo: {d.image.credit}</span>}
+            </figcaption>
+          )}
+        </figure>
+      )
+    }
+    <div class="prose">
+      <Content />
+    </div>
+
+    {
+      petitions.length > 0 && (
+        <section aria-labelledby="related-petitions">
+          <div class="section-head">
+            <h2 id="related-petitions">Petitions on this issue</h2>
+          </div>
+          <PetitionList petitions={petitions} />
+        </section>
+      )
+    }
+
+    {
+      articles.length > 0 && (
+        <section aria-labelledby="related-articles">
+          <div class="section-head">
+            <h2 id="related-articles">Related articles</h2>
+          </div>
+          <ArticleList articles={articles} />
+        </section>
+      )
+    }
+
+    <SourceList sources={d.sources} />
+
+    <Fragment slot="aside">
+      <section class="participate" aria-labelledby="participate-title">
+        <h2 id="participate-title">How to take part</h2>
+        {
+          d.participate.length > 0 ? (
+            <ul role="list">
+              {d.participate.map((item) => (
+                <li>
+                  {isExternal(item.href) ? (
+                    <a class="link-arrow" href={item.href} target="_blank" rel="noopener noreferrer">
+                      {item.label}
+                      <span class="visually-hidden"> (opens in a new tab)</span>
+                      <Icon name="external" />
+                    </a>
+                  ) : (
+                    <a class="link-arrow" href={withBase(item.href)}>
+                      {item.label}
+                      <Icon name="arrow-right" />
+                    </a>
+                  )}
+                  {item.description && <p>{item.description}</p>}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <ul role="list">
+              <li>
+                <a class="link-arrow" href={withBase('/events/')}>
+                  Come to an event <Icon name="arrow-right" />
+                </a>
+              </li>
+              <li>
+                <a class="link-arrow" href={withBase('/volunteer/')}>
+                  Volunteer <Icon name="arrow-right" />
+                </a>
+              </li>
+              <li>
+                <a class="link-arrow" href={withBase('/newsletter/')}>
+                  Get updates by email <Icon name="arrow-right" />
+                </a>
+              </li>
+            </ul>
+          )
+        }
+      </section>
+      <p class="aside-note">
+        See something we got wrong? <a href={withBase('/contact/')}>Tell us</a> and we’ll correct it.
+      </p>
+    </Fragment>
+  </ReadingLayout>
+</BaseLayout>
+
+<style>
+  .lead-figure {
+    margin: 0;
+  }
+
+  .lead-figure__frame {
+    aspect-ratio: 16 / 9;
+  }
+
+  .lead-figure__frame :global(picture),
+  .lead-figure__frame :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .lead-figure figcaption {
+    margin-top: var(--space-s);
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  .participate {
+    padding: var(--space-l);
+    background: var(--color-bg-alt);
+    border-top: var(--rule-thick) solid var(--gv-crimson);
+  }
+
+  .participate h2 {
+    font-size: var(--fs-h4);
+    margin-bottom: var(--space-m);
+  }
+
+  .participate ul {
+    display: grid;
+    gap: var(--space-m);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .participate li p {
+    margin: 0.2rem 0 0;
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  .aside-note {
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+</style>

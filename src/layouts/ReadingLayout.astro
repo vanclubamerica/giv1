@@ -1,0 +1,68 @@
+---
+/**
+ * Two-column reading layout used by issue, petition and event pages:
+ * a main column and a sidebar that stacks underneath on small screens.
+ */
+interface Props {
+  /** Sidebar first on small screens (e.g. a sign-up form). */
+  asideFirst?: boolean;
+  stickyAside?: boolean;
+}
+
+const { asideFirst = false, stickyAside = false } = Astro.props;
+---
+
+<div class:list={['container', 'reading', { 'reading--aside-first': asideFirst }]}>
+  <div class="reading__main">
+    <slot />
+  </div>
+  {
+    Astro.slots.has('aside') && (
+      <aside class:list={['reading__aside', { 'reading__aside--sticky': stickyAside }]}>
+        <slot name="aside" />
+      </aside>
+    )
+  }
+</div>
+
+<style>
+  .reading {
+    display: grid;
+    gap: var(--space-2xl);
+    padding-block: var(--space-2xl) var(--section-y);
+  }
+
+  .reading__main {
+    display: grid;
+    gap: var(--space-2xl);
+    align-content: start;
+    min-width: 0;
+  }
+
+  .reading__aside {
+    display: grid;
+    gap: var(--space-xl);
+    align-content: start;
+    min-width: 0;
+  }
+
+  .reading--aside-first .reading__aside {
+    order: -1;
+  }
+
+  @media (min-width: 62em) {
+    .reading {
+      grid-template-columns: minmax(0, 1fr) minmax(18rem, 25rem);
+      gap: clamp(2rem, 5vw, 5rem);
+    }
+
+    .reading--aside-first .reading__aside {
+      order: 0;
+    }
+
+    .reading__aside--sticky {
+      position: sticky;
+      top: calc(var(--header-h) + 1.5rem);
+    }
+  }
+</style>

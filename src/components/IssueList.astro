@@ -1,0 +1,150 @@
+---
+import type { Issue } from '../lib/content';
+import { ISSUE_STATE_LABELS } from '../lib/content';
+import { formatPlainDate, plainDateIso } from '../lib/dates';
+import { links } from '../lib/urls';
+import ContentImage from './ContentImage.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  issues: Issue[];
+  headingLevel?: 'h2' | 'h3';
+  /** Show the first issue larger, with its image. */
+  featureFirst?: boolean;
+}
+
+const { issues, headingLevel = 'h3', featureFirst = false } = Astro.props;
+const Heading = headingLevel;
+---
+
+<ol class:list={['issue-list', { 'issue-list--feature': featureFirst }]} role="list">
+  {
+    issues.map((issue, i) => {
+      const featured = featureFirst && i === 0;
+      const updated = issue.data.updatedAt ?? issue.data.publishedAt;
+      return (
+        <li
+          class:list={['issue-item', { 'issue-item--featured': featured, 'issue-item--has-image': Boolean(issue.data.image) }]}
+          data-issue-state={issue.data.state}
+          data-search={`${issue.data.title} ${issue.data.summary}`.toLowerCase()}
+        >
+          {issue.data.image && (featured || !featureFirst) && (
+            <div class="issue-item__media frame">
+              <ContentImage
+                src={issue.data.image.src}
+                alt={issue.data.image.alt}
+                position={issue.data.image.position}
+                sizes={featured ? '(min-width: 64em) 55vw, 100vw' : '(min-width: 48em) 14rem, 100vw'}
+              />
+            </div>
+          )}
+          <div class="issue-item__body">
+            <p class="issue-item__state">
+              <span class:list={['tag', `tag--${issue.data.state}`]}>{ISSUE_STATE_LABELS[issue.data.state]}</span>
+              <span class="issue-item__date">
+                Updated <time datetime={plainDateIso(updated)}>{formatPlainDate(updated)}</time>
+              </span>
+            </p>
+            <Heading class="issue-item__title">
+              <a href={links.issue(issue.id)}>{issue.data.title}</a>
+            </Heading>
+            <p class="issue-item__summary">{issue.data.summary}</p>
+            <a class="link-arrow issue-item__more" href={links.issue(issue.id)} aria-hidden="true" tabindex="-1">
+              Read about this issue
+              <Icon name="arrow-right" />
+            </a>
+          </div>
+        </li>
+      );
+    })
+  }
+</ol>
+
+<style>
+  .issue-list {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .issue-item {
+    display: grid;
+    gap: var(--space-m);
+    padding-block: var(--space-l);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .issue-item:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .issue-item[hidden] {
+    display: none;
+  }
+
+  .issue-item__media {
+    aspect-ratio: 16 / 10;
+  }
+
+  .issue-item__media :global(picture),
+  .issue-item__media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .issue-item__state {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-xs) var(--space-m);
+    margin: 0 0 var(--space-s);
+    font-size: var(--fs-small);
+    color: var(--color-text-muted);
+  }
+
+  .issue-item__title {
+    font-size: var(--fs-h3);
+  }
+
+  .issue-item__title a {
+    color: var(--color-heading);
+    text-decoration: none;
+  }
+
+  .issue-item__title a:hover {
+    color: var(--color-link);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+  .issue-item__summary {
+    margin-top: var(--space-s);
+    color: var(--color-text-muted);
+    max-width: 62ch;
+  }
+
+  .issue-item__more {
+    margin-top: var(--space-m);
+    font-size: var(--fs-small);
+  }
+
+  .issue-item--featured .issue-item__title {
+    font-size: var(--fs-h2);
+  }
+
+  @media (min-width: 48em) {
+    .issue-item--has-image:not(.issue-item--featured) {
+      grid-template-columns: 14rem 1fr;
+      gap: var(--space-xl);
+    }
+
+    .issue-item--featured.issue-item--has-image {
+      grid-template-columns: 11fr 9fr;
+      gap: var(--space-2xl);
+      align-items: center;
+    }
+  }
+</style>

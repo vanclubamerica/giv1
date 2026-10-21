@@ -1,0 +1,75 @@
+---
+/**
+ * Branded loading screen.
+ *
+ * It is hidden by default and only appears if the first page of a visit
+ * hasn't finished loading after 350 ms (slow connections). It disappears the
+ * moment the page is ready, never waits on purpose, and is removed after 6
+ * seconds no matter what. Without JavaScript it never shows. Later pages in
+ * the same visit skip it entirely.
+ */
+import { site } from '../config/site';
+import { withBase } from '../lib/urls';
+const logo = site.brand.logoLight;
+---
+
+<div id="gv-loader" class="gv-loader" role="status" aria-live="polite" hidden>
+  <div class="gv-loader__inner">
+    <img src={withBase(logo.src)} width={logo.width} height={logo.height} alt="" class="gv-loader__logo" />
+    <div class="gv-loader__bar" aria-hidden="true"><span></span><span></span><span></span></div>
+    <span class="visually-hidden">Loading {site.name}…</span>
+  </div>
+</div>
+<script is:inline>
+  (function () {
+    var el = document.getElementById('gv-loader');
+    if (!el) return;
+    var KEY = 'gv-ready';
+    try {
+      if (sessionStorage.getItem(KEY)) {
+        el.remove();
+        return;
+      }
+    } catch (e) {}
+    var shown = false;
+    var done = false;
+    var showTimer = setTimeout(function () {
+      if (done) return;
+      shown = true;
+      el.hidden = false;
+      requestAnimationFrame(function () {
+        el.classList.add('is-visible');
+      });
+    }, 350);
+    var capTimer = setTimeout(finish, 6000);
+    function finish() {
+      if (done) return;
+      done = true;
+      clearTimeout(showTimer);
+      clearTimeout(capTimer);
+      try {
+        sessionStorage.setItem(KEY, '1');
+      } catch (e) {}
+      if (!shown) {
+        el.remove();
+        return;
+      }
+      el.classList.remove('is-visible');
+      setTimeout(function () {
+        el.remove();
+      }, 250);
+    }
+    function whenReady() {
+      var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+      var fontCap = new Promise(function (resolve) {
+        setTimeout(resolve, 1500);
+      });
+      Promise.race([fonts, fontCap]).then(finish, finish);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', whenReady, { once: true });
+    } else {
+      whenReady();
+    }
+  })();
+</script>

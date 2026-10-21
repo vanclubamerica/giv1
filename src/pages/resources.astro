@@ -1,0 +1,166 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ExternalLink from '../components/ExternalLink.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { participationTips, resourceGroups, resourcesVerified } from '../config/resources';
+import { formatPlainDate } from '../lib/dates';
+import { withBase } from '../lib/urls';
+---
+
+<BaseLayout
+  title="Civic Resources"
+  description="Official websites for the City of Van, Van ISD, Van Zandt County and the State of Texas, plus guidance on public meetings, records and voting."
+>
+  <PageHeader
+    title="Civic resources"
+    lead="Where to find official information about local government in Van: meeting notices, elections, representatives and public records."
+  />
+
+  <div class="container resources-page">
+    <div class="notice resources-disclaimer">
+      <strong>These are outside websites</strong>
+      <p>
+        The links below go to official government and public-agency websites that Get Involved Van does not run. Listing them doesn’t mean those
+        organizations are affiliated with us or endorse our work. Links checked {formatPlainDate(new Date(resourcesVerified))}.
+      </p>
+    </div>
+
+    <section class="tips" aria-labelledby="tips-title">
+      <h2 id="tips-title">Getting the most from public meetings</h2>
+      <ul role="list">
+        {
+          participationTips.map((tip) => (
+            <li>
+              <h3>{tip.title}</h3>
+              <p>{tip.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    {
+      resourceGroups.map((group, gi) => (
+        <section class="group" aria-labelledby={`group-${gi}`}>
+          <div class="group__head">
+            <h2 id={`group-${gi}`}>{group.heading}</h2>
+            <p>{group.intro}</p>
+          </div>
+          <ul class="group__list" role="list">
+            {group.items.map((item) => (
+              <li>
+                <ExternalLink href={item.url} class="group__link">
+                  {item.name}
+                </ExternalLink>
+                <p>{item.description}</p>
+                <p class="group__url">{item.url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+
+    <p class="resources-suggest">
+      Know an official resource that belongs here, or found a broken link? <a href={withBase('/contact/')}>Let us know</a>.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .resources-page {
+    display: grid;
+    gap: var(--space-3xl);
+    padding-block: var(--space-2xl) var(--section-y);
+  }
+
+  .resources-disclaimer {
+    max-width: 52rem;
+  }
+
+  .tips h2 {
+    font-size: var(--fs-h3);
+    margin-bottom: var(--space-l);
+  }
+
+  .tips ul {
+    display: grid;
+    gap: var(--space-l) var(--space-2xl);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tips li {
+    padding-top: var(--space-m);
+    border-top: var(--rule-thick) solid var(--gv-deep-blue);
+  }
+
+  .tips h3 {
+    font-size: 1.15rem;
+    margin-bottom: var(--space-xs);
+  }
+
+  .tips p {
+    color: var(--color-text-muted);
+    font-size: var(--fs-small);
+  }
+
+  .group {
+    display: grid;
+    gap: var(--space-l) var(--space-3xl);
+  }
+
+  .group__head h2 {
+    font-size: var(--fs-h2);
+  }
+
+  .group__head p {
+    margin-top: var(--space-s);
+    max-width: 36ch;
+    color: var(--color-text-muted);
+  }
+
+  .group__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: var(--rule-thick) solid var(--gv-ink);
+  }
+
+  .group__list li {
+    padding-block: var(--space-m);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .group__list :global(.group__link) {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  .group__list p {
+    margin: 0.2rem 0 0;
+    color: var(--color-text-muted);
+  }
+
+  .group__url {
+    font-size: var(--fs-xs);
+    overflow-wrap: anywhere;
+  }
+
+  .resources-suggest {
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 56em) {
+    .tips ul {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 62em) {
+    .group {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    }
+  }
+</style>

@@ -1,0 +1,59 @@
+---
+import FormShell from './FormShell.astro';
+import { withBase } from '../../lib/urls';
+
+interface Props {
+  id?: string;
+  /** Where the sign-up came from (stored with the subscription). */
+  source?: 'newsletter-page' | 'homepage' | 'take-action' | 'other';
+  /** 'inline' puts email and button on one row on wide screens. */
+  variant?: 'stacked' | 'inline';
+  headingLevel?: 'h2' | 'h3';
+  /** Button style, e.g. "btn--light" on dark backgrounds. */
+  submitClass?: string;
+}
+
+const { id = 'newsletter-form', source = 'other', variant = 'stacked', headingLevel = 'h3', submitClass } = Astro.props;
+---
+
+<FormShell
+  type="newsletter"
+  id={id}
+  submitLabel="Sign up"
+  submitClass={submitClass}
+  successTitle="Check your inbox"
+  successText="We’ve sent a confirmation link. Your subscription starts when you click it."
+  headingLevel={headingLevel}
+  class:list={['newsletter-form', `newsletter-form--${variant}`]}
+>
+  <input type="hidden" name="source" value={source} />
+  <div class="newsletter-form__row">
+    <div class="field">
+      <label class="field__label" for={`${id}-email`}>Email address</label>
+      <input
+        class="input"
+        id={`${id}-email`}
+        name="email"
+        type="email"
+        autocomplete="email"
+        required
+        aria-required="true"
+        aria-describedby={`${id}-email-error`}
+        maxlength="254"
+        spellcheck="false"
+      />
+      <p class="field__error" id={`${id}-email-error`} data-error-for="email"></p>
+    </div>
+  </div>
+  <div class="field">
+    <label class="choice" for={`${id}-consent`}>
+      <input type="checkbox" id={`${id}-consent`} name="consent" aria-describedby={`${id}-consent-error`} required />
+      <span>
+        Yes, email me occasional updates from Get Involved Van. I can unsubscribe at any time. See the <a
+          href={withBase('/privacy/')}>privacy policy</a
+        >.
+      </span>
+    </label>
+    <p class="field__error" id={`${id}-consent-error`} data-error-for="consent"></p>
+  </div>
+</FormShell>

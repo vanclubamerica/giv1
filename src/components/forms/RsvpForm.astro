@@ -1,0 +1,49 @@
+---
+import type { Event } from '../../lib/content';
+import { rsvpOpen } from '../../lib/content';
+import Field from './Field.astro';
+import FormShell from './FormShell.astro';
+
+interface Props {
+  event: Event;
+}
+
+const { event } = Astro.props;
+const open = rsvpOpen(event);
+const id = 'rsvp-form';
+---
+
+<FormShell
+  type="rsvp"
+  id={id}
+  submitLabel="RSVP"
+  successTitle="You’re on the list"
+  successText="Thanks for letting us know you’re coming."
+  closedMessage={open ? undefined : 'RSVPs are closed for this event.'}
+  closedTitle="RSVPs closed"
+  headingLevel="h3"
+>
+  <input type="hidden" name="slug" value={event.id} />
+  <div class="form-grid form-grid--2">
+    <Field id={`${id}-name`} name="fullName" label="Full name" required autocomplete="name" maxlength={120} />
+    <Field id={`${id}-email`} name="email" label="Email address" type="email" required autocomplete="email" maxlength={254} spellcheck={false} />
+  </div>
+  <Field
+    id={`${id}-party`}
+    name="partySize"
+    label="How many people, including you?"
+    type="number"
+    required
+    min={1}
+    max={10}
+    value={1}
+    inputmode="numeric"
+    class="rsvp-party"
+  />
+</FormShell>
+
+<style>
+  :global(.rsvp-party) {
+    max-width: 14rem;
+  }
+</style>
