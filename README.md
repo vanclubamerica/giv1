@@ -210,7 +210,7 @@ Submissions are **never** stored in this repository.
 | --- | --- | --- |
 | GitHub → Actions **variables** | `PUBLIC_FORMS_ENDPOINT` | Supabase function URL. Turns the forms on. |
 | | `PUBLIC_TURNSTILE_SITE_KEY` | Turnstile site key (public). |
-| | `SITE_BASE` | `/giv1/` only while serving from `vanclubamerica.github.io/giv1/`. |
+| | `SITE_BASE` | Optional override of the path prefix. Normally detected automatically. |
 | Supabase function **secrets** | `SITE_URL`, `ALLOWED_ORIGINS`, `TURNSTILE_SECRET_KEY`, `RATE_LIMIT_SALT`, `RESEND_API_KEY`, `EMAIL_FROM`, `ORGANIZER_EMAIL` | See [`.env.example`](.env.example). |
 
 ## Deployment
@@ -222,9 +222,10 @@ and can be started by hand from the **Actions** tab.
 
 **One-time setup:** repository **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 
-Until the custom domain works, the site can be served at `https://vanclubamerica.github.io/giv1/`: add
-the Actions variable `SITE_BASE` = `/giv1/` and re-run the workflow. Remove the variable once
-`getinvolvedvan.com` is live. Canonical links and the sitemap always use `https://getinvolvedvan.com`.
+Until the custom domain works, the site is served at `https://vanclubamerica.github.io/giv1/`. The
+workflow asks GitHub for the site's address and builds the links to match (`/giv1/…` now, `/…` once the
+custom domain is set), so nothing needs changing by hand. Canonical links and the sitemap always use
+`https://getinvolvedvan.com`.
 
 ## Custom domain and DNS
 
@@ -248,7 +249,7 @@ the Actions variable `SITE_BASE` = `/giv1/` and re-run the workflow. Remove the 
    DNS check passes, tick **Enforce HTTPS** (the certificate can take up to an hour).
 4. Recommended: verify the domain for the `vanclubamerica` account (**GitHub Settings → Pages → Add a
    domain**) to prevent anyone else from claiming it.
-5. Remove the `SITE_BASE` variable if you set it, and re-run the workflow.
+5. Re-run the **Build and deploy** workflow so links switch from `/giv1/…` to the domain root.
 
 ## Testing and checks
 
@@ -273,7 +274,7 @@ roles cannot read or write any submission table.
 | "Submissions are only accepted from the Get Involved Van website" | Add the site's address to the `ALLOWED_ORIGINS` secret. |
 | Newsletter sign-up "isn't available yet" | Set `RESEND_API_KEY` and `EMAIL_FROM` and verify the domain in Resend. |
 | A new page shows 404 right after pushing | Wait for the Actions run to finish (about 2 minutes). |
-| Site works at github.io but links are broken | `SITE_BASE` must be `/giv1/` for that address, and unset for the custom domain. |
+| Site works at github.io but links are broken | Re-run the workflow after changing the custom domain setting. If you set a `SITE_BASE` variable, remove it. |
 
 ## Before launch
 

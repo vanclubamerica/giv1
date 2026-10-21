@@ -6,9 +6,9 @@
 #   Secrets and variables -> Actions -> Variables (all optional):
 #     PUBLIC_FORMS_ENDPOINT      Supabase function URL, turns the forms on
 #     PUBLIC_TURNSTILE_SITE_KEY  Cloudflare Turnstile site key
-#     SITE_BASE                  "/giv1/" only while serving from
-#                                vanclubamerica.github.io/giv1/ (leave unset
-#                                once getinvolvedvan.com is live)
+#     SITE_BASE                  override the path prefix (normally detected:
+#                                "/giv1" at vanclubamerica.github.io/giv1/,
+#                                none once the custom domain is set)
 # See README.md for details.
 
 name: Build and deploy
@@ -35,12 +35,26 @@ jobs:
   build:
     name: Build and verify
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
     env:
       PUBLIC_FORMS_ENDPOINT: ${{ vars.PUBLIC_FORMS_ENDPOINT }}
       PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.PUBLIC_TURNSTILE_SITE_KEY }}
-      SITE_BASE: ${{ vars.SITE_BASE }}
     steps:
       - uses: actions/checkout@v7
+
+      # Asks GitHub where the site is served: "/giv1" at
+      # vanclubamerica.github.io/giv1/, empty once getinvolvedvan.com is the
+      # custom domain. Skipped for pull requests.
+      - name: Detect Pages address
+        id: pages
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: actions/configure-pages@v6
+
+      - name: Choose base path
+        run: echo "SITE_BASE=${{ vars.SITE_BASE || steps.pages.outputs.base_path }}" >> "$GITHUB_ENV"
 
       - uses: actions/setup-node@v7
         with:
